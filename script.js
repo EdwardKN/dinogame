@@ -9,7 +9,14 @@ canvas.style = "position: absolute; top: 0px; left: 0px; right: 0px; bottom: 0px
 
 var dinoImg = new Image();
 
+var back1Img = new Image();
+var back2Img = new Image();
+back1Img.src = 'Images/back1.png';
+back2Img.src = 'Images/back2.png';
+
+
 var jumpSound = new Audio('Sounds/jump.wav');
+
 
 
 var dino = {
@@ -17,15 +24,23 @@ var dino = {
   y:400,
   jumping: false,
   inAir: false,
-  jumpheight: 23,
-  jumpheightstandard: 23,
+  jumpheight: 30,
+  jumpheightstandard: 30,
   animationState: 2,
   crouch: false,
-  gravitation: 1,
-  image: undefined
+  gravitation: 2,
+  image: undefined,
+  speed: 20
 };
 
-var background = "white";
+var back1 = {
+  x: 0,
+  y: 0,
+}
+var back2 = {
+  x: 1365,
+  y: 0,
+}
 
 window.addEventListener('keydown', function(event){
   console.log(event)
@@ -47,8 +62,8 @@ window.addEventListener('keyup', function(event){
 });
 
 function update(){
-  c.fillStyle = background;
-  c.fillRect(0,0,1920,1080);
+
+  c.clearRect(0,0,canvas.width,canvas.height);
 
   if(dino.animationState === 1){
     dino.image = 'Images/dino1.png';
@@ -65,13 +80,43 @@ function update(){
   if(dino.animationState === 5){
     dino.image = 'Images/dino5.png';
   }
-if (dinoImg.complete) {
-  c.drawImage(dinoImg, dino.x, dino.y);
-} else {
-  dinoImg.addEventListener('load', loaded)
-  dinoImg.addEventListener('error', function() {
-  })
-}
+
+
+
+  if(back1Img.complete) {
+    c.drawImage(back1Img, back1.x, back1.y);
+  }else {
+    back1Img.addEventListener('load', loaded)
+    back1Img.addEventListener('error', function() {
+    })
+  }  
+  if(back2Img.complete) {
+    c.drawImage(back2Img, back2.x, back2.y);
+  }else {
+    back2Img.addEventListener('load', loaded)
+    back2Img.addEventListener('error', function() {
+    })
+  }
+
+
+  if(dinoImg.complete) {
+    c.drawImage(dinoImg, dino.x, dino.y);
+  }else {
+    dinoImg.addEventListener('load', loaded)
+    dinoImg.addEventListener('error', function() {
+    })
+  }
+
+
+  back1.x -= dino.speed;
+  back2.x -= dino.speed;
+
+  if(back1.x < -1365){
+    back1.x = 1365-dino.speed;
+  }
+  if(back2.x < -1365){
+    back2.x = 1365-dino.speed;
+  }
   dinoImg.src = dino.image;
 
   if(dino.jumping === true){
