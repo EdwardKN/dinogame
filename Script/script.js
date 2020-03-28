@@ -101,18 +101,26 @@ if(user.loggedIn === "true"){
 }
 
 var cactus1 = {
-  x: 2000+Math.random()*1000,
+  x: -1000,
   y: standardHeight
 };
 var cactus2 = {
-  x: cactus1.x+(Math.random()*1000)+2000,
+  x: -1000,
+  y: standardHeight
+};
+var cactus3 = {
+  x: -1000,
+  y: standardHeight
+};
+var cactus4 = {
+  x: -1000,
   y: standardHeight
 };
 
 
 var bird1 = {
-  x: 2000+Math.random()*1000,
-  y: standardHeight,
+  x: -1000,
+  y: (standardHeight+100)-Math.random()*300,
   animationState: 1,
   image:undefined
 };
@@ -156,10 +164,6 @@ window.addEventListener('keydown', function(event){
         alert("This browser doesn't supporter fullscreen");
     }
   }
-  if(event.code === "Space" && dino.inAir === false && dino.died === false && user.loggedIn === true){
-    jump();
-    dino.stand = false;
-  }
   if(event.key === "Shift" && user.loggedIn === true){
     crouch()  
   }
@@ -185,6 +189,10 @@ window.addEventListener('keypress', function(event){
   if(user.puttingInPassword === true && event.key !== "Enter" && user.passwordInput.length < 20){
     user.passwordInput += event.key;
     user.passwordInputVisual += "•"
+  }
+  if(event.code === "Space" && dino.inAir === false && dino.died === false && user.loggedIn === true){
+    jump();
+    dino.stand = false;
   }
 });
 window.addEventListener('keyup', function(event){
@@ -225,11 +233,13 @@ function update(){
   }
 
   if(bird1.animationState === 1){
-    bird1.image = 'Images/Dinosaur/dino1.png';
+    bird1.image = 'Images/Bird/bird1.png';
   }
   if(bird1.animationState === 2){
-    bird1.image = 'Images/Dinosaur/dino2.png';
+    bird1.image = 'Images/Bird/bird2.png';
   }
+  dinoImg.src = dino.image;
+  bird1Img.src = bird1.image;
 
 
 
@@ -268,6 +278,7 @@ function update(){
 
   if(cactus1Img.complete) {
     c.drawImage(cactus1Img, Math.floor(cactus1.x), cactus1.y);
+    c.drawImage(cactus1Img, Math.floor(cactus3.x), cactus3.y);
   }else {
     cactus1Img.addEventListener('load', loaded)
     cactus1Img.addEventListener('error', function() {
@@ -275,6 +286,8 @@ function update(){
   }
   if(cactus2Img.complete) {
     c.drawImage(cactus2Img, Math.floor(cactus2.x), cactus2.y);
+    c.drawImage(cactus2Img, Math.floor(cactus4.x), cactus4.y);
+
   }else {
     cactus2Img.addEventListener('load', loaded)
     cactus2Img.addEventListener('error', function() {
@@ -306,19 +319,6 @@ function update(){
   if(dino.y > standardHeight){
     dino.y = standardHeight;
   }
-  if(cactus1.x < -1000 && dino.backwards === false){
-    cactus1.x = Math.floor(1500+Math.random()*2000);
-  }
-  if(cactus1.x > 1000 && dino.backwards === true){
-    cactus1.x = Math.floor(-1500-Math.random()*2000);
-  }  
-  if(cactus2.x < -2000 && dino.backwards === false){
-    cactus2.x = Math.floor(1500+(Math.random()*2000)+1000);
-  }
-  if(cactus2.x > 2000 && dino.backwards === true){
-    cactus2.x = Math.floor(-1500-(Math.random()*2000)+1000);
-  }  
-  dinoImg.src = dino.image;
   if(user.highscore < 10){
     user.highscoreVisual = "0000" + Math.floor(user.highscore);
   }
@@ -349,6 +349,7 @@ function update(){
   if(dino.score > 10000){
     dino.scoreVisual = Math.floor(dino.score);
   }  
+
   if(dino.freeze === true){
     setTimeout(function(){
       dino.freeze = false;
@@ -398,9 +399,6 @@ function update(){
       dino.scoreVisual = Math.floor(dino.freezeValue);
     }    
   }
-  if(cactus1.x-800 < cactus2.x){
-    cactus2.x = Math.floor((Math.random()*4000)+1500);
-  }
   if(dino.visualShow === true){
     dino.scoreVisualVisual = "HI " + user.highscoreVisual + "   " + dino.scoreVisual;
   }else{
@@ -423,6 +421,8 @@ function update(){
     back2.x -= dino.speed;
     cactus1.x -= dino.speed;
     cactus2.x -= dino.speed;
+    cactus3.x -= dino.speed;
+    cactus4.x -= dino.speed;
     bird1.x -= dino.speed;
 
     dino.speed = Math.floor(dino.score/100+20);
@@ -467,6 +467,19 @@ function update(){
   if(dino.x > cactus2.x-50 && dino.x-100 < cactus2.x && dino.y > standardHeight-100){
     dino.died = true;
   }
+  if(dino.x > cactus3.x-50 && dino.x-100 < cactus3.x && dino.y > standardHeight-100){
+    dino.died = true;
+  }
+  if(dino.x > cactus4.x-50 && dino.x-100 < cactus4.x && dino.y > standardHeight-100){
+    dino.died = true;
+  }
+  if(dino.x+150 > bird1.x && dino.y > bird1.y-100 && dino.x < bird1.x+50 && dino.y < bird1.y+100 && dino.crouch === false){
+    dino.died = true;
+  }
+  if(dino.x+150 > bird1.x && dino.y > bird1.y-100 && dino.x < bird1.x+50 && dino.y+100 < bird1.y+100 && dino.crouch === true){
+    dino.died = true;
+  }
+
   if(dino.died === true){
     dino.animationState = 6;
     c.textAlign = "center";
@@ -525,7 +538,6 @@ function update(){
     }
   }
   if(leaderboardShow === true){
-        // Edvin får jobba här 
         c.textAlign = "center"
         c.fillStyle = "#1270CE";
         c.fillRect(1365/20+10, 768/20+10, 1365-1365/10-20, 768-768/10-20);
@@ -552,7 +564,6 @@ function update(){
         c.fillText("8." + userArray[7].name + ": " + userArray[7].score + " Points", 1365/2, lineSpace*19);
         c.fillText("9." + userArray[8].name + ": " + userArray[8].score + " Points", 1365/2, lineSpace*21);
         c.fillText("10." + userArray[9].name + ": " + userArray[9].score + " Points", 1365/2, lineSpace*23);
-        // till hit
     }
   if(user.loggedIn === false){
     menumusic.play();
@@ -667,13 +678,14 @@ function animation3(){
     if(bird1.animationState === 2){
       bird1.animationState = 1;
     }
-  setTimeout(animation4, 220);
+  setTimeout(animation4, 400);
 }
 function animation4(){
     if(bird1.animationState === 1){
       bird1.animationState = 2;
     }
-  setTimeout(animation3, 220);
+    teleport();
+  setTimeout(animation3, 400);
 }
 function crouch(){
   dino.crouch = true;
@@ -717,18 +729,35 @@ function exitDeath(){
     x: 0,
     y: 0,
   };
-  cactus1 = {
-    x: 2000+Math.random()*1000,
-    y: standardHeight
-  };
-  cactus2 = {
-    x: cactus1.x+(Math.random()*3000)+2000,
-    y: standardHeight
-  };
   back2 = {
     x: 1365,
     y: 0,
-  };  
+  }; 
+  cactus1 = {
+    x: -1000,
+    y: standardHeight
+  };
+  cactus2 = {
+    x: -1000,
+    y: standardHeight
+  };
+  cactus3 = {
+    x: -1000,
+    y: standardHeight
+  };
+  cactus4 = {
+    x: -1000,
+    y: standardHeight
+  };
+  
+  
+  bird1 = {
+    x: -5000,
+    y: (standardHeight+100)-Math.random()*300,
+    animationState: 1,
+    image:undefined
+  }; 
+  
   deathMusic.pause();
   deathMusic.currentTime = 0;
   death.pause();
@@ -736,6 +765,7 @@ function exitDeath(){
 }
 
 animation1();
+animation3();
 update();
 
 
@@ -833,3 +863,30 @@ function sendScore(username, score, password, mail){
   http.open("GET", url);
   http.send();
 };
+
+
+function teleport(){
+  if(dino.stand === false && dino.died === false && user.loggedIn === true){
+    var chosen = Math.floor(Math.random()*6);
+
+    if(cactus1.x < -200 && chosen === 1){
+      cactus1.x = 2000;
+    }
+    else if(cactus2.x < -200 && chosen === 2){
+      cactus2.x = 2000;
+    }
+    else if(cactus3.x < -200 && chosen === 3){
+      cactus3.x = 2000;
+    }
+    else if(cactus4.x < -200 && chosen === 4){
+      cactus4.x = 2000;
+    }
+    else if(bird1.x < -200 && chosen === 5 || bird1.x < -200 && chosen === 6){
+      bird1.x = 2000;
+      bird1.y = (standardHeight+100)-Math.random()*300;
+    }
+    else{
+      chosen = Math.floor(Math.random()*6);
+    }
+  }
+}
