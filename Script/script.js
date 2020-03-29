@@ -13,13 +13,10 @@ back1Img.src = 'Images/Background/back1.png';
 back2Img.src = 'Images/Background/back2.png';
 
 var cactus1Img = new Image();
-cactus1Img.src = 'Images/Cactus/cactus1.png';
 
 var cactus2Img = new Image();
-cactus2Img.src = 'Images/Cactus/cactus2.png';
 
 var cactus3Img = new Image();
-cactus3Img.src = 'Images/Cactus/cactus3.png';
 
 var bird1Img = new Image();
 
@@ -244,14 +241,13 @@ function update(){
   if(bird1.animationState === 2){
     bird1.image = 'Images/Bird/bird2.png';
   }
-  dinoImg.src = dino.image;
-  bird1Img.src = bird1.image;
 
 
 
 
   if(back1Img.complete) {
     c.drawImage(back1Img, Math.floor(back1.x), back1.y);
+    back1Img.src = 'Images/Background/back1.png';
   }else {
     back1Img.addEventListener('load', loaded)
     back1Img.addEventListener('error', function() {
@@ -259,6 +255,7 @@ function update(){
   }  
   if(back2Img.complete) {
     c.drawImage(back2Img, Math.floor(back2.x), back2.y);
+    back2Img.src = 'Images/Background/back2.png';
   }else {
     back2Img.addEventListener('load', loaded)
     back2Img.addEventListener('error', function() {
@@ -268,6 +265,7 @@ function update(){
 
   if(dinoImg.complete) {
     c.drawImage(dinoImg, dino.x, Math.floor(dino.y));
+    dinoImg.src = dino.image;
   }else {
     dinoImg.addEventListener('load', loaded)
     dinoImg.addEventListener('error', function() {
@@ -276,6 +274,7 @@ function update(){
 
   if(bird1Img.complete) {
     c.drawImage(bird1Img, Math.floor(bird1.x), Math.floor(bird1.y));
+    bird1Img.src = bird1.image;
   }else {
     bird1Img.addEventListener('load', loaded)
     bird1Img.addEventListener('error', function() {
@@ -284,6 +283,7 @@ function update(){
 
   if(cactus1Img.complete) {
     c.drawImage(cactus1Img, Math.floor(cactus1.x), cactus1.y);
+    cactus1Img.src = 'Images/Cactus/cactus1.png';
   }else {
     cactus1Img.addEventListener('load', loaded)
     cactus1Img.addEventListener('error', function() {
@@ -293,6 +293,7 @@ function update(){
   if(cactus2Img.complete) {
     c.drawImage(cactus2Img, Math.floor(cactus2.x), cactus2.y);
     c.drawImage(cactus2Img, Math.floor(cactus4.x), cactus4.y);
+    cactus2Img.src = 'Images/Cactus/cactus2.png';
 
   }else {
     cactus2Img.addEventListener('load', loaded)
@@ -301,6 +302,7 @@ function update(){
   }
   if(cactus3Img.complete) {
     c.drawImage(cactus3Img, Math.floor(cactus3.x), cactus3.y-15);
+    cactus3Img.src = 'Images/Cactus/cactus3.png';
   }else {
     cactus3Img.addEventListener('load', loaded)
     cactus3Img.addEventListener('error', function() {
