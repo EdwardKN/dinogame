@@ -91,7 +91,8 @@ var dino = {
   freeze: false,
   freezeValue: undefined,
   visualShow: true,
-  doOnce: false
+  doOnce: false,
+  fastFall: false
 };
 
 
@@ -154,7 +155,7 @@ window.addEventListener('mousemove', function(event){
 
 window.addEventListener('keydown', function(event){
   console.log(event)
-  if(event.key === "f"){
+  if(event.code === "KeyF"){
     if(canvas.RequestFullScreen){
         canvas.RequestFullScreen();
     }else if(canvas.webkitRequestFullScreen){
@@ -167,20 +168,21 @@ window.addEventListener('keydown', function(event){
         alert("This browser doesn't supporter fullscreen");
     }
   }
-  if(event.key === "Shift" && user.loggedIn === true){
+  if(event.code === "ShiftLeft" && user.loggedIn === true){
     crouch()  
+    dino.fastFall = true
   }
-  if(event.key === "Enter" && dino.died === true){
+  if(event.code === "Enter" && dino.died === true){
     exitDeath();
   }
-  if(event.key === "Tab" && user.loggedIn === true){
+  if(event.code === "Tab" && user.loggedIn === true){
     leaderboardShow = true;
     getScore();
   }
-  if(user.puttingInUsername === true && event.key === "Backspace"){
+  if(user.puttingInUsername === true && event.code === "Backspace"){
     user.usernameInput = user.usernameInput.slice(0, -1);
   }
-  if(user.puttingInPassword === true && event.key === "Backspace"){
+  if(user.puttingInPassword === true && event.code === "Backspace"){
     user.passwordInput = user.passwordInput.slice(0, -1);
     user.passwordInputVisual = user.passwordInputVisual.slice(0, -1);
   }
@@ -201,6 +203,7 @@ window.addEventListener('keypress', function(event){
 window.addEventListener('keyup', function(event){
   if(event.key === "Shift"){
     crouchEnd()  
+    dino.fastFall = false;
   }
   if(event.key === "Tab" && user.loggedIn === true){
     leaderboardShow = false;
@@ -483,7 +486,7 @@ function update(){
   if(dino.x > cactus4.x-50 && dino.x-100 < cactus4.x && dino.y > standardHeight-100){
     dino.died = true;
   }
-  if(dino.x+150 > bird1.x+50 && dino.y > bird1.y-100 && dino.x < bird1.x+50 && dino.y+20 < bird1.y+100 && dino.crouch === false){
+  if(dino.x+150 > bird1.x+50 && dino.y > bird1.y-100 && dino.x < bird1.x+50 && dino.y < bird1.y+100 && dino.crouch === false){
     dino.died = true;
   }
   if(dino.x+150 > bird1.x+50 && dino.y > bird1.y-100 && dino.x < bird1.x+50 && dino.y+100 < bird1.y+100 && dino.crouch === true){
@@ -661,6 +664,9 @@ function jump(){
 function up(){
   dino.y -= dino.jumpheight;
   dino.jumpheight -= dino.gravitation;
+  if(dino.fastFall === true){
+    dino.jumpheight -= dino.gravitation;
+  }
 }
 function animation1(){
   if(dino.died === false && dino.stand === false){
@@ -724,7 +730,6 @@ function exitDeath(){
     died: false,
     score: 0,
     scoreVisual: "",
-    highscore:getCookie("highscore") === -1 ? 0 : getCookie("highscore"),
     highscoreVisual: "",
     playOnce: false,
     stand: true,
@@ -732,7 +737,7 @@ function exitDeath(){
     freezeValue: undefined,
     visualShow: true,
     doOnce: false,
-    username: getCookie("username") === -1 ? undefined : getCookie("username")
+    fastFall: false
   };
 
   back1 = {
