@@ -18,6 +18,9 @@ cactus1Img.src = 'Images/Cactus/cactus1.png';
 var cactus2Img = new Image();
 cactus2Img.src = 'Images/Cactus/cactus2.png';
 
+var cactus3Img = new Image();
+cactus3Img.src = 'Images/Cactus/cactus3.png';
+
 var bird1Img = new Image();
 
 
@@ -278,12 +281,12 @@ function update(){
 
   if(cactus1Img.complete) {
     c.drawImage(cactus1Img, Math.floor(cactus1.x), cactus1.y);
-    c.drawImage(cactus1Img, Math.floor(cactus3.x), cactus3.y);
   }else {
     cactus1Img.addEventListener('load', loaded)
     cactus1Img.addEventListener('error', function() {
     })
   }
+
   if(cactus2Img.complete) {
     c.drawImage(cactus2Img, Math.floor(cactus2.x), cactus2.y);
     c.drawImage(cactus2Img, Math.floor(cactus4.x), cactus4.y);
@@ -291,6 +294,13 @@ function update(){
   }else {
     cactus2Img.addEventListener('load', loaded)
     cactus2Img.addEventListener('error', function() {
+    })
+  }
+  if(cactus3Img.complete) {
+    c.drawImage(cactus3Img, Math.floor(cactus3.x), cactus3.y-15);
+  }else {
+    cactus3Img.addEventListener('load', loaded)
+    cactus3Img.addEventListener('error', function() {
     })
   }
 
@@ -473,10 +483,10 @@ function update(){
   if(dino.x > cactus4.x-50 && dino.x-100 < cactus4.x && dino.y > standardHeight-100){
     dino.died = true;
   }
-  if(dino.x+150 > bird1.x && dino.y > bird1.y-100 && dino.x < bird1.x+50 && dino.y < bird1.y+100 && dino.crouch === false){
+  if(dino.x+150 > bird1.x+50 && dino.y > bird1.y-100 && dino.x < bird1.x+50 && dino.y+20 < bird1.y+100 && dino.crouch === false){
     dino.died = true;
   }
-  if(dino.x+150 > bird1.x && dino.y > bird1.y-100 && dino.x < bird1.x+50 && dino.y+100 < bird1.y+100 && dino.crouch === true){
+  if(dino.x+150 > bird1.x+50 && dino.y > bird1.y-100 && dino.x < bird1.x+50 && dino.y+100 < bird1.y+100 && dino.crouch === true){
     dino.died = true;
   }
 
@@ -675,13 +685,13 @@ function animation2(){
   setTimeout(animation1, 110);
 }
 function animation3(){
-    if(bird1.animationState === 2){
+    if(bird1.animationState === 2 && dino.died === false){
       bird1.animationState = 1;
     }
   setTimeout(animation4, 400);
 }
 function animation4(){
-    if(bird1.animationState === 1){
+    if(bird1.animationState === 1 && dino.died === false){
       bird1.animationState = 2;
     }
     teleport();
