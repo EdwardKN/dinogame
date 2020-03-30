@@ -4,3 +4,6 @@ body {
 body {
   overflow: hidden;
 }
+canvas { position: absolute; }
+#game-layer { z-index: 2; }
+#background-layer { z-index: 1; }

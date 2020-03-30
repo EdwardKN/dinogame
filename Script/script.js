@@ -1,9 +1,16 @@
-var canvas = document.querySelector('canvas');
+var canvas2 = document.getElementById('background-layer');
+
+canvas2.width = 1365;
+canvas2.height = 768;
+
+var c2 = canvas2.getContext('2d');
+
+var canvas = document.getElementById('game-layer');
 
 canvas.width = 1365;
 canvas.height = 768;
 
-var c = canvas.getContext('2d', { alpha: false });
+var c = canvas.getContext('2d');
 
 var dinoImg = new Image();
 
@@ -165,7 +172,7 @@ window.addEventListener('keydown', function(event){
         alert("This browser doesn't supporter fullscreen");
     }
   }
-  if(event.code === "ShiftLeft" && user.loggedIn === true){
+  if(event.code === "ShiftLeft" && user.loggedIn === true || event.code === "KeyS"){
     crouch()  
     dino.fastFall = true
   }
@@ -192,13 +199,13 @@ window.addEventListener('keypress', function(event){
     user.passwordInput += event.key;
     user.passwordInputVisual += "•"
   }
-  if(event.code === "Space" && dino.inAir === false && dino.died === false && user.loggedIn === true){
+  if(event.code === "Space" && dino.inAir === false && dino.died === false && user.loggedIn === true || event.code === "KeyW" && dino.inAir === false && dino.died === false && user.loggedIn === true){
     jump();
     dino.stand = false;
   }
 });
 window.addEventListener('keyup', function(event){
-  if(event.key === "Shift"){
+  if(event.code === "ShiftLeft" || event.code === "KeyS"){
     crouchEnd()  
     dino.fastFall = false;
   }
@@ -246,7 +253,7 @@ function update(){
 
 
   if(back1Img.complete) {
-    c.drawImage(back1Img, Math.floor(back1.x), back1.y);
+    c2.drawImage(back1Img, Math.floor(back1.x), back1.y);
     back1Img.src = 'Images/Background/back1.png';
   }else {
     back1Img.addEventListener('load', loaded)
@@ -254,7 +261,7 @@ function update(){
     })
   }  
   if(back2Img.complete) {
-    c.drawImage(back2Img, Math.floor(back2.x), back2.y);
+    c2.drawImage(back2Img, Math.floor(back2.x), back2.y);
     back2Img.src = 'Images/Background/back2.png';
   }else {
     back2Img.addEventListener('load', loaded)
@@ -264,7 +271,7 @@ function update(){
 
 
   if(dinoImg.complete) {
-    c.drawImage(dinoImg, dino.x, Math.floor(dino.y));
+    c.drawImage(dinoImg, Math.floor(dino.x), Math.floor(dino.y));
     dinoImg.src = dino.image;
   }else {
     dinoImg.addEventListener('load', loaded)
@@ -500,7 +507,7 @@ function update(){
     c.textAlign = "center";
     c.font = "75px IMPACT, Sans-serif";
     c.fillStyle = "black";
-    c.fillText("You died, press ENTER to play more!", 1365/2, 768/2)
+    c.fillText("You died, press ENTER to play again!", 1365/2, 768/2)
     deathMusic.play();
     runningMusic.pause();
     runningMusic.currentTime = 0;
