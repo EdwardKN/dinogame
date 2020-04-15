@@ -1,4 +1,4 @@
-(function(){
+  (function() {
   var canvas = document.getElementById('game-layer');
 
   canvas.width = 1365;
@@ -50,6 +50,10 @@
   var beep1 = new Audio('/Sounds/beep1.mp3');
   var beep2 = new Audio('/Sounds/beep2.mp3');
 
+  var muted = false;
+
+
+
 
   var standardHeight = 480;
 
@@ -59,11 +63,12 @@
 
   var leaderboardShow = false;
 
-  var version = "V0.1.2d"
+  var version = "V0.1.4"
 
   var oldVersion = false;
 
   var scores = [];
+  scores.unshift(Math.floor(0));
 
   var average = 0;
   
@@ -73,12 +78,14 @@
 
   var tmpY;
 
+
+
   var user = {
-    highscore: getCookie("highscore") === -1 ? 0 : getCookie("highscore"),
-    username: getCookie("username") === -1 ? undefined : getCookie("username"),
-    password: getCookie("password") === -1 ? undefined : getCookie("password"),
-    mail: getCookie("mail") === -1 ? undefined : getCookie("mail"),
-    loggedIn: getCookie("loggedIn") === -1 ? false : getCookie("loggedIn"),
+    highscore: 0,
+    username: undefined,
+    password: undefined,
+    mail: undefined,
+    loggedIn: false,
     puttingInUsername: false,
     puttingInPassword: false,
     puttingInMail: false,
@@ -128,7 +135,10 @@
 
 
 
+
+
   setInterval(teleport, 1000)
+
 
 
 
@@ -172,6 +182,8 @@
     y: 0,
   };
 
+
+
   var mouse = {
     x: undefined,
     y: undefined,
@@ -190,8 +202,49 @@
     text6: "Buy for 1500 Gold",
     color7: "white",
     text7: "Buy for 2500 Gold",
-    equipedLife: Number(getCookie("equipedLife") === -1 ? 0 : getCookie("equipedLife"))
+    equipedLife: Number(getCookie("equipedLife") === -1 ? 0 : getCookie("equipedLife")),
+    bindingVisual: false,
+    bindingColor: "white"
   };
+  var bindings = getCookie("bindings") === -1 ? {
+    jump1: "Space",
+    jump2: "ArrowUp",
+    crouch1: "ControlLeft",
+    crouch2: "ShiftLeft",
+    pause1: "KeyP",
+    pause2: "KeyE",
+    leaderboard1: "Tab",
+    leaderboard2: "KeyR",
+    mute1: "KeyM",
+    mute2: "KeyL",
+    fullscreen1: "KeyF",
+    fullscreen2: "KeyV",
+    jump1Changing: false,
+    jump2Changing: false,
+    crouch1Changing: false,
+    crouch2Changing: false,
+    pause1Changing: false,
+    pause2Changing: false,
+    leaderboard1Changing: false,
+    leaderboard2Changing: false,
+    mute1Changing: false,
+    mute2Changing: false,
+    fullscreen1Changing: false,
+    fullscreen2Changing: false,
+    jump1ChangingColor: "white",
+    jump2ChangingColor: "white",
+    crouch1ChangingColor: "white",
+    crouch2ChangingColor: "white",
+    pause1ChangingColor: "white",
+    pause2ChangingColor: "white",
+    leaderboard1ChangingColor: "white",
+    leaderboard2ChangingColor: "white",
+    mute1ChangingColor: "white",
+    mute2ChangingColor: "white",
+    fullscreen1ChangingColor: "white",
+    fullscreen2ChangingColor: "white",
+  } : JSON.parse(getCookie("bindings"))
+
   var hat = {
     crouchValue: 65,
     crouchValue2: 0,
@@ -210,6 +263,7 @@
     hatboost: 0,
     fly: false
   }
+  
   if(user.loggedIn === "true" || user.loggedIn === true) {
     getScore();
     setTimeout(function(){
@@ -277,7 +331,12 @@
 
   window.addEventListener('keydown', function (event) {
     console.log(event)
-    if (event.code === "KeyF") {
+    if(event.code === bindings.mute1 || event.code === bindings.mute2){
+      if(menu.bindingVisual === false){
+        mute();
+      }
+    }
+    if (event.code === bindings.fullscreen1 || event.code === bindings.fullscreen2) {
       if (canvas.RequestFullScreen) {
         canvas.RequestFullScreen();
       } else if (canvas.webkitRequestFullScreen) {
@@ -290,27 +349,34 @@
         alert("This browser doesn't supporter fullscreen");
       }
     }
-    if (event.code === "ShiftLeft" && user.loggedIn === true && dino.stand === false|| event.code === "KeyS" && user.loggedIn === true && dino.stand === false || event.code === "ControlLeft" && user.loggedIn === true && dino.stand === false) {
-      crouch()
-      dino.fastFall = true
+    if (event.code === bindings.crouch1 || event.code === bindings.crouch2){
+      if(user.loggedIn === true && dino.stand === false && dino.died === false && menu.bindingVisual === false){
+        crouch()
+        dino.fastFall = true
+      }
     }
-    if (event.code === "Enter" && dino.died === true && menu.shopVisual === false) {
+    if(event.code === "Enter" && dino.died === true && menu.shopVisual === false && menu.bindingVisual === false) {
       if(oldVersion === false){
         exitDeath();
       }else{
         alert("You are running on an old version of the game. Please reload to play more.");
       }
     }
-    if (event.code === "Tab" && user.loggedIn === true) {
-      leaderboardShow = true;
-      getScore();
+    if (event.code === bindings.leaderboard1 || event.code === bindings.leaderboard2) {
+      if(user.loggedIn === true && menu.bindingVisual === false){
+        leaderboardShow = true;
+        getScore();
+      }
     }
-    if (event.code === "KeyP") {
+    if (event.code === bindings.pause1 || event.code === bindings.pause2) {
       runningMusic.pause();
       menu.paused = true;
       dino.stand = true;
       dino.start = false;
     }
+
+
+
     if (user.puttingInUsername === true && event.code === "Backspace") {
       user.usernameInput = user.usernameInput.slice(0, -1);
     }
@@ -327,48 +393,55 @@
       user.passwordInput += event.key;
       user.passwordInputVisual += "•"
     }
-    if (event.code === "Space" && dino.inAir === false && dino.died === false && user.loggedIn === true && menu.shopVisual === false|| event.code === "KeyW" && dino.inAir === false && dino.died === false && user.loggedIn === true && menu.shopVisual === false) {
-      if (dino.stand === true && dino.start === true) {
-        jump();
-        dino.stand = false;
-        dino.startedrunning = true;
-      }
-      if (dino.stand === false) {
-        jump();
-        dino.startedrunning = true;
-      }
-      if (dino.start === false && dino.stand === true && dino.timer === "") {
-        beep1.play();
-        dino.timer = "3";
-        menu.paused = false;
-        setTimeout(function () {
-          beep1.currentTime = 0;
-          beep1.play();
-          dino.timer = "2";
-        }, 1000)
-        setTimeout(function () {
-          dino.timer = "1";
-          beep1.currentTime = 0;
-          beep1.play();
-        }, 2000)
-        setTimeout(function () {
+
+
+
+    if (event.code === bindings.jump1 || event.code === bindings.jump2) {
+      if(dino.inAir === false && dino.died === false && user.loggedIn === true && menu.shopVisual === false && menu.bindingVisual === false){
+        if (dino.stand === true && dino.start === true) {
+          jump();
           dino.stand = false;
           dino.startedrunning = true;
-          dino.timer = "";
-          beep2.currentTime = 0;
-          beep2.play()
-          runningMusic.play();
-        }, 3000);
+        }
+        if (dino.stand === false) {
+          jump();
+          dino.startedrunning = true;
+        }
+        if (dino.start === false && dino.stand === true && dino.timer === "") {
+          beep1.play();
+          dino.timer = "3";
+          menu.paused = false;
+          setTimeout(function () {
+            beep1.currentTime = 0;
+            beep1.play();
+            dino.timer = "2";
+          }, 1000)
+          setTimeout(function () {
+            dino.timer = "1";
+            beep1.currentTime = 0;
+            beep1.play();
+          }, 2000)
+          setTimeout(function () {
+            dino.stand = false;
+            dino.startedrunning = true;
+            dino.timer = "";
+            beep2.currentTime = 0;
+            beep2.play()
+            runningMusic.play();
+          }, 3000);
+        }
       }
     }
   });
   window.addEventListener('keyup', function (event) {
-    if (event.code === "ShiftLeft" || event.code === "KeyS" || event.code === "ControlLeft") {
+    if (event.code === bindings.crouch1 && menu.bindingVisual === false || event.code === bindings.crouch2 && menu.bindingVisual === false) {
       crouchEnd()
       dino.fastFall = false;
     }
-    if (event.key === "Tab" && user.loggedIn === true) {
-      leaderboardShow = false;
+    if (event.code === bindings.leaderboard1 || event.code === bindings.leaderboard2){
+      if(user.loggedIn === true && menu.bindingVisual === false){
+        leaderboardShow = false;
+      }
     }
   });
 
@@ -383,7 +456,7 @@
         return val !== 0;
     });
     if(scores === []){
-      scores = 0;
+      scores = [0];
     }
 
 
@@ -684,10 +757,10 @@
       cactus3.x -= dino.speed;
       cactus4.x -= dino.speed;
       bird1.x -= dino.speed;
-      if (dino.score < 3250) {
+      if (dino.score < 4000) {
         dino.speed = Math.floor(dino.score / 300 + 20);
       } else {
-        dino.speed = Math.floor(3250 / 300 + 20);
+        dino.speed = Math.floor(4000 / 300 + 20);
       }
 
   	  if(dino.crouch === true && dino.inAir === false){
@@ -777,60 +850,58 @@
       c.font = "bold 75px arial,serif";
       c.fillStyle = "black";
       c.textBaseline = "ideographic";
-      if(menu.shopVisual === false){
+      if(menu.shopVisual === false && leaderboardShow === false){
         c.fillText("Avg   "+averageVisual, 1320, 190);
       }
       if (dino.playOnce == false) {
         death.play();
         dino.playOnce = true;
       }
-      if (mouse.x > 1365 - 420 && mouse.x < 1365 - 20 && mouse.y > 768 - 120 && mouse.y < 768 - 20) {
-        user.logOutColor = "#A2A2A2"
-        if (mouse.click === true) {
-          exitDeath()
-          document.cookie = `username=;Expires=Sun, 22 Oct 1970 08:00:00 UTC;`;
-          document.cookie = `password=;Expires=Sun, 22 Oct 1970 08:00:00 UTC;`;
-          document.cookie = `mail=;Expires=Sun, 22 Oct 1970 08:00:00 UTC;`;
-          document.cookie = `loggedIn=;Expires=Sun, 22 Oct 1970 08:00:00 UTC;`;
-          document.cookie = "highscore=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-          user = {
-            highscore: 0,
-            username: undefined,
-            password: undefined,
-            mail: undefined,
-            loggedIn: false,
-            puttingInUsername: false,
-            puttingInPassword: false,
-            puttingInMail: false,
-            loginColor: "white",
-            usernameInput: "",
-            passwordInput: "",
-            passwordColor: "white",
-            usernameColor: "white",
-            passwordInputVisual: "",
-            noAccountColor: "white",
-            rememberMe: false,
-            encryptedPassword: undefined,
-            logOutColor: "white",
-            wrongText: ""
-          };
-          hat.buyvalue = "";
-          coin.value = 0;
-          hatArray = [];
-          hat.equipedHat = 0;
-          menu.equipedLife = 0;
-          hat.hatboost = 0;
-          dino.lives = 0;
-          hatImg.src = "";
-          heartImg.src = "";
-          heart2Img.src = "";
+      if(menu.bindingVisual === false){
+        if (mouse.x > 1365 - 420 && mouse.x < 1365 - 20 && mouse.y > 768 - 120 && mouse.y < 768 - 20) {
+          user.logOutColor = "#A2A2A2"
+          if (mouse.click === true) {
+            exitDeath()
+            user = {
+              highscore: 0,
+              username: undefined,
+              password: undefined,
+              mail: undefined,
+              loggedIn: false,
+              puttingInUsername: false,
+              puttingInPassword: false,
+              puttingInMail: false,
+              loginColor: "white",
+              usernameInput: "",
+              passwordInput: "",
+              passwordColor: "white",
+              usernameColor: "white",
+              passwordInputVisual: "",
+              noAccountColor: "white",
+              rememberMe: false,
+              encryptedPassword: undefined,
+              logOutColor: "white",
+              wrongText: ""
+            };
+            hat.buyvalue = "";
+            coin.value = 0;
+            hatArray = [];
+            hat.equipedHat = 0;
+            menu.equipedLife = 0;
+            hat.hatboost = 0;
+            dino.lives = 0;
+            hatImg.src = "";
+            heartImg.src = "";
+            heart2Img.src = "";
+            scores = [0]
+            document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          }
+        } else {
+          user.logOutColor = "white";
         }
-      } else {
-        user.logOutColor = "white";
       }
       if (user.highscore < dino.score) {
         user.highscore = dino.score;
-        document.cookie = `highscore=${user.highscore};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
         sendScore(user.username, Math.floor(user.highscore), user.password, user.mail, Math.floor(coin.value), hat.buyvalue, scores);
       }
       sendScore(user.username, Math.floor(user.highscore), user.password, user.mail, Math.floor(coin.value), hat.buyvalue, scores);
@@ -838,7 +909,6 @@
         c.font = "75px IMPACT, Sans-serif";
         c.fillStyle = "black";
         c.fillText("You died, press ENTER to play again!", 1365 / 2, 768 / 2)
-        console.log("hej")
     }
     if (dino.x > cactus1.x - 50 && dino.x - 100 < cactus1.x && dino.y > standardHeight - 100) {
       if(dino.lives === 0 && dino.hitOnce === false){
@@ -1086,7 +1156,7 @@
       c.fillText("<", 1250+200-menu.sideValue, 490)
       c.fillStyle = "white"
       c.fillText("Hats(scoreboosters)", 1365/2-menu.sideValue, 75)
-      c.fillText("Extra lifes", 1365+1365/2-menu.sideValue, 75)
+      c.fillText("Extra lives", 1365+1365/2-menu.sideValue, 75)
       var hatArray = hat.buyvalue.split(",");
       if(mouse.x > 1200-menu.sideValue && mouse.y > 410 && mouse.x < 1200+100-menu.sideValue && mouse.y < 410+100 && menu.sideValue === 0){
         menu.sideColor = "#A2A2A2"
@@ -1333,34 +1403,7 @@
       }
     }
     
-    if (leaderboardShow === true) {
-      c.textAlign = "center"
-      c.fillStyle = "#1270CE";
-      c.fillRect(1365 / 20 + 10, 768 / 20 + 10, 1365 - 1365 / 10 - 20, 768 - 768 / 10 - 20);
 
-      c.fillStyle = "white";
-
-      c.fillStyle = "white";
-
-      c.font = " " + 1365 / 30 + "px Impact, Sans-serif";
-
-      c.fillText("Leaderboard", 1365 / 2, lineSpace * 3);
-
-      c.fillStyle = "#d4af37";
-      c.fillText("1." + userArray[0].name + ": " + userArray[0].score + " Points", 1365 / 2, lineSpace * 5);
-      c.fillStyle = "#C0C0C0";
-      c.fillText("2." + userArray[1].name + ": " + userArray[1].score + " Points", 1365 / 2, lineSpace * 7);
-      c.fillStyle = "#cd7f32";
-      c.fillText("3." + userArray[2].name + ": " + userArray[2].score + " Points", 1365 / 2, lineSpace * 9);
-      c.fillStyle = "white";
-      c.fillText("4." + userArray[3].name + ": " + userArray[3].score + " Points", 1365 / 2, lineSpace * 11);
-      c.fillText("5." + userArray[4].name + ": " + userArray[4].score + " Points", 1365 / 2, lineSpace * 13);
-      c.fillText("6." + userArray[5].name + ": " + userArray[5].score + " Points", 1365 / 2, lineSpace * 15);
-      c.fillText("7." + userArray[6].name + ": " + userArray[6].score + " Points", 1365 / 2, lineSpace * 17);
-      c.fillText("8." + userArray[7].name + ": " + userArray[7].score + " Points", 1365 / 2, lineSpace * 19);
-      c.fillText("9." + userArray[8].name + ": " + userArray[8].score + " Points", 1365 / 2, lineSpace * 21);
-      c.fillText("10." + userArray[9].name + ": " + userArray[9].score + " Points", 1365 / 2, lineSpace * 23);
-    }
     if (user.loggedIn === false) {
       menumusic.play();
       c.fillStyle = "black";
@@ -1371,7 +1414,7 @@
       c.fillRect(1365 / 3 * 2 - 120, 500, 100, 55);
       c.fillStyle = "white";
       c.font = "75px IMPACT, Sans-serif";
-      c.fillText("Please login to play!", 1365 / 2, 200)
+      c.fillText(`"Remember me" is broken`, 1365 / 2, 200)
       c.fillStyle = "red"
       c.font = "75px IMPACT, Sans-serif";
       c.fillText(user.wrongText, 1365 / 2, 400)
@@ -1444,20 +1487,22 @@
     }
   
     if(menu.paused === true && user.loggedIn === true && dino.died === false){
-      c.fillStyle = "black"
-      c.font = "75px IMPACT, Sans-serif";
-      c.fillRect(1365 - 420, 768 - 120, 400, 100)
-      c.fillStyle = user.logOutColor;
-      c.textAlign = "center";
-      c.fillText("Log out", 1365 - 210, 768 - 30);
-      c.textAlign = "right"
-      c.font = "bold 75px arial,serif";
-      c.fillStyle = "black";
-      c.textBaseline = "ideographic";
-      if(menu.shopVisual === false){
-        c.fillText("Avg   "+averageVisual, 1320, 190);
+      if(menu.bindingVisual === false){
+        c.fillStyle = "black"
+        c.font = "75px IMPACT, Sans-serif";
+        c.fillRect(1365 - 420, 768 - 120, 400, 100)
+        c.fillStyle = user.logOutColor;
+        c.textAlign = "center";
+        c.fillText("Log out", 1365 - 210, 768 - 30);
+        c.textAlign = "right"
+        c.font = "bold 75px arial,serif";
+        c.fillStyle = "black";
+        c.textBaseline = "ideographic";
+        if(menu.shopVisual === false && leaderboardShow === false){
+          c.fillText("Avg   "+averageVisual, 1320, 190);
+        }
       }
-      if(dino.startedrunning === false){
+      if(dino.startedrunning === false && menu.bindingVisual === false){
         c.fillStyle = "black"
         c.font = "75px IMPACT, Sans-serif";
         c.fillRect(1365-420, 768-240, 400, 100)
@@ -1480,60 +1525,602 @@
         }else{
           menu.shopcolor = "white"
         }
+        if(menu.shopVisual === false){
+          c.fillStyle = "black"
+          c.font = "75px IMPACT, Sans-serif";
+          c.fillRect(1365-420, 768-360, 400, 100)
+          c.fillStyle = menu.bindingColor;
+          c.textAlign = "center";
+          c.fillText("Keybinds", 1365 - 220, 768 - 270);
+          if(mouse.x > 1365 - 420 && mouse.x < 1365 - 20 && mouse.y > 768-360 && mouse.y < 768 - 260){
+            menu.bindingColor = "#A2A2A2";
+            if(mouse.click === true){
+            setTimeout(function(){
+              menu.bindingVisual = true;
+            },50)
+            }
+          }else{
+            menu.bindingColor = "white"
+          }
+        }
+      }
+      if(menu.bindingVisual === false){
+        if (mouse.x > 1365 - 420 && mouse.x < 1365 - 20 && mouse.y > 768 - 120 && mouse.y < 768 - 20) {
+          user.logOutColor = "#A2A2A2"
+          if (mouse.click === true) {
+            exitDeath()
+            user = {
+              highscore: 0,
+              username: undefined,
+              password: undefined,
+              mail: undefined,
+              loggedIn: false,
+              puttingInUsername: false,
+              puttingInPassword: false,
+              puttingInMail: false,
+              loginColor: "white",
+              usernameInput: "",
+              passwordInput: "",
+              passwordColor: "white",
+              usernameColor: "white",
+              passwordInputVisual: "",
+              noAccountColor: "white",
+              rememberMe: false,
+              encryptedPassword: undefined,
+              logOutColor: "white",
+              wrongText: ""
+            };
+            hat.buyvalue = "";
+            coin.value = 0;
+            hatArray = [];
+            hat.equipedHat = 0;
+            menu.equipedLife = 0;
+            hat.hatboost = 0;
+            dino.lives = 0;
+            hatImg.src = "";
+            heartImg.src = "";
+            heart2Img.src = "";
+            average = 0;
+            scores = [0];
+            document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+          }
+        } else {
+          user.logOutColor = "white";
+        }
+      }
+    }
+    if (leaderboardShow === true) {
+      for (var i = 0; i < userArray.length; i++) {
+        if(userArray[i].name === "Knullbullepojken"){
+          userArray[i].name = "Kanelbullepojken"
+        }
+        if(userArray[i].name === "månsärlitegay"){
+          userArray[i].name = "månsärlitecool"        
+        }
+        if(userArray[i].name === "FuL"){
+          userArray[i].name = "FiN"
+        }
+        if(userArray[i].name === "måns e lite gay"){
+          userArray[i].name = "måns e lite fin"
+        }
+
       }
 
-      if (mouse.x > 1365 - 420 && mouse.x < 1365 - 20 && mouse.y > 768 - 120 && mouse.y < 768 - 20) {
-        user.logOutColor = "#A2A2A2"
-        if (mouse.click === true) {
-          exitDeath()
-          document.cookie = `username=;Expires=Sun, 22 Oct 1970 08:00:00 UTC;`;
-          document.cookie = `password=;Expires=Sun, 22 Oct 1970 08:00:00 UTC;`;
-          document.cookie = `mail=;Expires=Sun, 22 Oct 1970 08:00:00 UTC;`;
-          document.cookie = `loggedIn=;Expires=Sun, 22 Oct 1970 08:00:00 UTC;`;
-          document.cookie = `equipedHat=;Expires=Sun, 22 Oct 1970 08:00:00 UTC;`;
-          document.cookie = `equipedLife=;Expires=Sun, 22 Oct 1970 08:00:00 UTC;`;
-          document.cookie = "highscore=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-          user = {
-            highscore: 0,
-            username: undefined,
-            password: undefined,
-            mail: undefined,
-            loggedIn: false,
-            puttingInUsername: false,
-            puttingInPassword: false,
-            puttingInMail: false,
-            loginColor: "white",
-            usernameInput: "",
-            passwordInput: "",
-            passwordColor: "white",
-            usernameColor: "white",
-            passwordInputVisual: "",
-            noAccountColor: "white",
-            rememberMe: false,
-            encryptedPassword: undefined,
-            logOutColor: "white",
-            wrongText: ""
-          };
-          hat.buyvalue = "";
-          coin.value = 0;
-          hatArray = [];
-          hat.equipedHat = 0;
-          menu.equipedLife = 0;
-          hat.hatboost = 0;
-          dino.lives = 0;
-          hatImg.src = "";
-          heartImg.src = "";
-          heart2Img.src = "";
-          average = 0;
-          scores = [];
-        }
-      } else {
-        user.logOutColor = "white";
+      c.textAlign = "center"
+      c.fillStyle = "#1270CE";
+      c.fillRect(1365 / 20 + 10, 768 / 20 + 10, 1365 - 1365 / 10 - 20, 768 - 768 / 10 - 20);
+
+      c.fillStyle = "white";
+
+      c.fillStyle = "white";
+
+      c.font = " " + 1365 / 30 + "px Impact, Sans-serif";
+
+      c.fillText("Leaderboard", 1365 / 2, lineSpace * 3);
+
+      c.fillStyle = "#d4af37";
+      c.fillText("1." + userArray[0].name + ": " + userArray[0].score + " Points", 1365 / 2, lineSpace * 5);
+      c.fillStyle = "#C0C0C0";
+      c.fillText("2." + userArray[1].name + ": " + userArray[1].score + " Points", 1365 / 2, lineSpace * 7);
+      c.fillStyle = "#cd7f32";
+      c.fillText("3." + userArray[2].name + ": " + userArray[2].score + " Points", 1365 / 2, lineSpace * 9);
+      c.fillStyle = "white";
+      c.fillText("4." + userArray[3].name + ": " + userArray[3].score + " Points", 1365 / 2, lineSpace * 11);
+      c.fillText("5." + userArray[4].name + ": " + userArray[4].score + " Points", 1365 / 2, lineSpace * 13);
+      c.fillText("6." + userArray[5].name + ": " + userArray[5].score + " Points", 1365 / 2, lineSpace * 15);
+      c.fillText("7." + userArray[6].name + ": " + userArray[6].score + " Points", 1365 / 2, lineSpace * 17);
+      c.fillText("8." + userArray[7].name + ": " + userArray[7].score + " Points", 1365 / 2, lineSpace * 19);
+      c.fillText("9." + userArray[8].name + ": " + userArray[8].score + " Points", 1365 / 2, lineSpace * 21);
+      c.fillText("10." + userArray[9].name + ": " + userArray[9].score + " Points", 1365 / 2, lineSpace * 23);
+    }
+    if(menu.bindingVisual === true){
+      c.textAlign = "center"
+      c.fillStyle = "#1270CE";
+      c.fillRect(0, 0, 1365, 768);
+
+      c.fillStyle = "black"
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillRect(20, 20, 400, 100)
+      c.fillStyle = menu.bindingColor;
+      c.textAlign = "center";
+      c.fillText("Back", 220, 110);
+      c.fillStyle = "White";
+      c.fillText("Keybinds", 1365/2, 110);
+      c.textAlign = "right";
+      c.fillText("Jump:", 450, lineSpace * 10);
+      c.fillText("Crouch:", 450, lineSpace * 13);
+      c.fillText("Leaderboard:", 450, lineSpace * 16);
+      c.fillText("Mute sound:", 450, lineSpace * 19);
+      c.fillText("Pause:", 450, lineSpace * 22);
+      c.fillText("Fullscreen:", 450, lineSpace * 25);
+      c.textAlign = "center";
+      c.fillText("Primary", 1365/2, lineSpace * 7);
+      c.fillText("Secondary", 1365/5*4, lineSpace * 7);
+      c.fillStyle = "black";
+      c.fillRect(500, lineSpace*7, 1365/3*2-80, lineSpace*18)
+      c.strokeStyle = "white";
+      c.lineWidth = 5;
+      c.strokeRect(500, lineSpace*7, 1365/3*2-80, lineSpace*18);
+      c.strokeRect(500, lineSpace*10, 1365/3*2-80, lineSpace*15);
+      c.strokeRect(500, lineSpace*13, 1365/3*2-80, lineSpace*12);
+      c.strokeRect(500, lineSpace*16, 1365/3*2-80, lineSpace*9);
+      c.strokeRect(500, lineSpace*19, 1365/3*2-80, lineSpace*6);
+      c.strokeRect(500, lineSpace*22, 1365/3*2-80, lineSpace*3);
+      c.strokeRect(500+1365/3-40, lineSpace*7, (1365/3*2)/2-40, lineSpace*18);
+
+      c.fillStyle = "white"
+      c.textAlign = "left";
+      c.fillStyle = bindings.jump1ChangingColor;
+      c.fillText(bindings.jump1, 520, lineSpace*10)
+      c.fillStyle = bindings.crouch1ChangingColor;
+      c.fillText(bindings.crouch1, 520, lineSpace*13)
+      c.fillStyle = bindings.leaderboard1ChangingColor;
+      c.fillText(bindings.leaderboard1, 520, lineSpace*16)
+      c.fillStyle = bindings.mute1ChangingColor;
+      c.fillText(bindings.mute1, 520, lineSpace*19)
+      c.fillStyle = bindings.pause1ChangingColor;
+      c.fillText(bindings.pause1, 520, lineSpace*22)
+      c.fillStyle = bindings.fullscreen1ChangingColor;
+      c.fillText(bindings.fullscreen1, 520, lineSpace*25)
+
+      c.fillStyle = bindings.jump2ChangingColor;
+      c.fillText(bindings.jump2, 500+1365/3-40+20, lineSpace*10)
+      c.fillStyle = bindings.crouch2ChangingColor;
+      c.fillText(bindings.crouch2, 500+1365/3-40+20, lineSpace*13)
+      c.fillStyle = bindings.leaderboard2ChangingColor;
+      c.fillText(bindings.leaderboard2, 500+1365/3-40+20, lineSpace*16)
+      c.fillStyle = bindings.mute2ChangingColor;
+      c.fillText(bindings.mute2, 500+1365/3-40+20, lineSpace*19)
+      c.fillStyle = bindings.pause2ChangingColor;
+      c.fillText(bindings.pause2, 500+1365/3-40+20, lineSpace*22)
+      c.fillStyle = bindings.fullscreen2ChangingColor;
+      c.fillText(bindings.fullscreen2, 500+1365/3-40+20, lineSpace*25)
+      if(bindings.jump1Changing === true){
+        bindings.jump1ChangingColor = "#696969";
       }
-      
+      if(bindings.crouch1Changing === true){
+        bindings.crouch1ChangingColor = "#696969";
+      }
+      if(bindings.leaderboard1Changing === true){
+        bindings.leaderboard1ChangingColor = "#696969";
+      }
+      if(bindings.mute1Changing === true){
+        bindings.mute1ChangingColor = "#696969";
+      }
+      if(bindings.pause1Changing === true){
+        bindings.pause1ChangingColor = "#696969";
+      }
+      if(bindings.fullscreen1Changing === true){
+        bindings.fullscreen1ChangingColor = "#696969";
+      }
+      if(bindings.jump2Changing === true){
+        bindings.jump2ChangingColor = "#696969";
+      }
+      if(bindings.crouch2Changing === true){
+        bindings.crouch2ChangingColor = "#696969";
+      }
+      if(bindings.leaderboard2Changing === true){
+        bindings.leaderboard2ChangingColor = "#696969";
+      }
+      if(bindings.mute2Changing === true){
+        bindings.mute2ChangingColor = "#696969";
+      }
+      if(bindings.pause2Changing === true){
+        bindings.pause2ChangingColor = "#696969";
+      }
+      if(bindings.fullscreen2Changing === true){
+        bindings.fullscreen2ChangingColor = "#696969";
+      }
+
+      window.addEventListener('keyup', function(event){
+        if(bindings.jump1Changing === true){
+          bindings.jump1 = event.code;
+        }
+        if(bindings.crouch1Changing === true){
+          bindings.crouch1 = event.code;
+        }
+        if(bindings.leaderboard1Changing === true){
+          bindings.leaderboard1 = event.code;
+        }
+        if(bindings.mute1Changing === true){
+          bindings.mute1 = event.code;
+        }
+        if(bindings.pause1Changing === true){
+          bindings.pause1 = event.code;
+        }
+        if(bindings.fullscreen1Changing === true){
+          bindings.fullscreen1 = event.code;
+        }
+        if(bindings.jump2Changing === true){
+          bindings.jump2 = event.code;
+        }
+        if(bindings.crouch2Changing === true){
+          bindings.crouch2 = event.code;
+        }
+        if(bindings.leaderboard2Changing === true){
+          bindings.leaderboard2 = event.code;
+        }
+        if(bindings.mute2Changing === true){
+          bindings.mute2 = event.code;
+        }
+        if(bindings.pause2Changing === true){
+          bindings.pause2 = event.code;
+        }
+        if(bindings.fullscreen2Changing === true){
+          bindings.fullscreen2 = event.code;
+        }
+        if(bindings.jump1Changing === true || bindings.jump2Changing === true || bindings.crouch1Changing === true || bindings.crouch2Changing === true || bindings.leaderboard1Changing === true || bindings.leaderboard2Changing === true || bindings.mute1Changing === true || bindings.mute2Changing === true || bindings.pause1Changing === true || bindings.pause2Changing === true || bindings.fullscreen1Changing === true || bindings.fullscreen2Changing === true){
+          bindings.jump1Changing = false;
+          bindings.jump2Changing = false;
+          bindings.crouch1Changing = false;
+          bindings.crouch2Changing = false;
+          bindings.leaderboard1Changing = false;
+          bindings.leaderboard2Changing = false;
+          bindings.mute1Changing = false;
+          bindings.mute2Changing = false;
+          bindings.pause1Changing = false;
+          bindings.pause2Changing = false;
+          bindings.fullscreen1Changing = false;
+          bindings.fullscreen2Changing = false;
+          bindings.jump1ChangingColor = "white";
+          bindings.jump2ChangingColor = "white";
+          bindings.crouch1ChangingColor = "white";
+          bindings.crouch2ChangingColor = "white";
+          bindings.leaderboard1ChangingColor = "white";
+          bindings.leaderboard2ChangingColor = "white";
+          bindings.mute1ChangingColor = "white";
+          bindings.mute2ChangingColor = "white";
+          bindings.pause1ChangingColor = "white";
+          bindings.pause2ChangingColor = "white";
+          bindings.fullscreen1ChangingColor = "white";
+          bindings.fullscreen2ChangingColor = "white";
+        }
+          document.cookie = `bindings=${JSON.stringify(bindings)};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
+      });
+
+
+
+        if(mouse.x > 500 && mouse.x < 500+(1365/3*2)/2-40 && mouse.y > lineSpace * 7 && mouse.y < lineSpace * 10){
+          if(bindings.jump1Changing === false){
+            bindings.jump1ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = true;
+            bindings.jump2Changing = false;
+            bindings.crouch1Changing = false;
+            bindings.crouch2Changing = false;
+            bindings.leaderboard1Changing = false;
+            bindings.leaderboard2Changing = false;
+            bindings.mute1Changing = false;
+            bindings.mute2Changing = false;
+            bindings.pause1Changing = false;
+            bindings.pause2Changing = false;
+            bindings.fullscreen1Changing = false;
+            bindings.fullscreen2Changing = false;         
+          }
+        }else{
+          if(bindings.jump1Changing === false){
+            bindings.jump1ChangingColor = "white"
+          }
+        }
+        if(mouse.x > 500 && mouse.x < 500+(1365/3*2)/2-40 && mouse.y > lineSpace * 10 && mouse.y < lineSpace * 13){
+          if(bindings.crouch1Changing === false){
+            bindings.crouch1ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = false;
+            bindings.jump2Changing = false;
+            bindings.crouch1Changing = true;
+            bindings.crouch2Changing = false;
+            bindings.leaderboard1Changing = false;
+            bindings.leaderboard2Changing = false;
+            bindings.mute1Changing = false;
+            bindings.mute2Changing = false;
+            bindings.pause1Changing = false;
+            bindings.pause2Changing = false;
+            bindings.fullscreen1Changing = false;
+            bindings.fullscreen2Changing = false;         
+          }
+        }else{
+          if(bindings.crouch1Changing === false){
+            bindings.crouch1ChangingColor = "white"
+          }
+        }
+        if(mouse.x > 500 && mouse.x < 500+(1365/3*2)/2-40 && mouse.y > lineSpace * 13 && mouse.y < lineSpace * 16){
+          if(bindings.leaderboard1Changing === false){
+            bindings.leaderboard1ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = false;
+            bindings.jump2Changing = false;
+            bindings.crouch1Changing = false;
+            bindings.crouch2Changing = false;
+            bindings.leaderboard1Changing = true;
+            bindings.leaderboard2Changing = false;
+            bindings.mute1Changing = false;
+            bindings.mute2Changing = false;
+            bindings.pause1Changing = false;
+            bindings.pause2Changing = false;
+            bindings.fullscreen1Changing = false;
+            bindings.fullscreen2Changing = false;         
+          }
+        }else{
+          if(bindings.leaderboard1Changing === false){
+            bindings.leaderboard1ChangingColor = "white"
+          }
+        }
+        if(mouse.x > 500 && mouse.x < 500+(1365/3*2)/2-40 && mouse.y > lineSpace * 16 && mouse.y < lineSpace * 19){
+          if(bindings.mute1Changing === false){
+            bindings.mute1ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = false;
+            bindings.jump2Changing = false;
+            bindings.crouch1Changing = false;
+            bindings.crouch2Changing = false;
+            bindings.leaderboard1Changing = false;
+            bindings.leaderboard2Changing = false;
+            bindings.mute1Changing = true;
+            bindings.mute2Changing = false;
+            bindings.pause1Changing = false;
+            bindings.pause2Changing = false;
+            bindings.fullscreen1Changing = false;
+            bindings.fullscreen2Changing = false;         
+          }
+        }else{
+          if(bindings.mute1Changing === false){
+            bindings.mute1ChangingColor = "white"
+          }
+        }
+        if(mouse.x > 500 && mouse.x < 500+(1365/3*2)/2-40 && mouse.y > lineSpace * 19 && mouse.y < lineSpace * 22){
+          if(bindings.pause1Changing === false){
+            bindings.pause1ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = false;
+            bindings.jump2Changing = false;
+            bindings.crouch1Changing = false;
+            bindings.crouch2Changing = false;
+            bindings.leaderboard1Changing = false;
+            bindings.leaderboard2Changing = false;
+            bindings.mute1Changing = false;
+            bindings.mute2Changing = false;
+            bindings.pause1Changing = true;
+            bindings.pause2Changing = false;
+            bindings.fullscreen1Changing = false;
+            bindings.fullscreen2Changing = false;         
+          }
+        }else{
+          if(bindings.pause1Changing === false){
+            bindings.pause1ChangingColor = "white"
+          }
+        }
+        if(mouse.x > 500 && mouse.x < 500+(1365/3*2)/2-40 && mouse.y > lineSpace * 22 && mouse.y < lineSpace * 25){
+          if(bindings.fullscreen1Changing === false){
+            bindings.fullscreen1ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = false;
+            bindings.jump2Changing = false;
+            bindings.crouch1Changing = false;
+            bindings.crouch2Changing = false;
+            bindings.leaderboard1Changing = false;
+            bindings.leaderboard2Changing = false;
+            bindings.mute1Changing = false;
+            bindings.mute2Changing = false;
+            bindings.pause1Changing = false;
+            bindings.pause2Changing = false;
+            bindings.fullscreen1Changing = true;
+            bindings.fullscreen2Changing = false;         
+          }
+        }else{
+          if(bindings.fullscreen1Changing === false){
+            bindings.fullscreen1ChangingColor = "white"
+          }
+        }
+        if(mouse.x > 500+(1365/3*2)/2-40 && mouse.x < 500+((1365/3*2)/2-40)+((1365/3*2)/2-40) && mouse.y > lineSpace * 7 && mouse.y < lineSpace * 10){
+          if(bindings.jump2Changing === false){
+            bindings.jump2ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = false;
+            bindings.jump2Changing = true;
+            bindings.crouch1Changing = false;
+            bindings.crouch2Changing = false;
+            bindings.leaderboard1Changing = false;
+            bindings.leaderboard2Changing = false;
+            bindings.mute1Changing = false;
+            bindings.mute2Changing = false;
+            bindings.pause1Changing = false;
+            bindings.pause2Changing = false;
+            bindings.fullscreen1Changing = false;
+            bindings.fullscreen2Changing = false;         
+          }
+        }else{
+          if(bindings.jump2Changing === false){
+            bindings.jump2ChangingColor = "white"
+          }
+        }
+        if(mouse.x > 500+(1365/3*2)/2-40 && mouse.x < 500+(1365/3*2)/2-40+(1365/3*2)/2-40 && mouse.y > lineSpace * 10 && mouse.y < lineSpace * 13){
+          if(bindings.crouch2Changing === false){
+            bindings.crouch2ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = false;
+            bindings.jump2Changing = false;
+            bindings.crouch1Changing = false;
+            bindings.crouch2Changing = true;
+            bindings.leaderboard1Changing = false;
+            bindings.leaderboard2Changing = false;
+            bindings.mute1Changing = false;
+            bindings.mute2Changing = false;
+            bindings.pause1Changing = false;
+            bindings.pause2Changing = false;
+            bindings.fullscreen1Changing = false;
+            bindings.fullscreen2Changing = false;         
+          }
+        }else{
+          if(bindings.crouch2Changing === false){
+            bindings.crouch2ChangingColor = "white"
+          }
+        }
+        if(mouse.x > 500+((1365/3*2)/2-40) && mouse.x < 500+((1365/3*2)/2-40)+((1365/3*2)/2-40) && mouse.y > lineSpace * 13 && mouse.y < lineSpace * 16){
+          if(bindings.leaderboard2Changing === false){
+            bindings.leaderboard2ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = false;
+            bindings.jump2Changing = false;
+            bindings.crouch1Changing = false;
+            bindings.crouch2Changing = false;
+            bindings.leaderboard1Changing = false;
+            bindings.leaderboard2Changing = true;
+            bindings.mute1Changing = false;
+            bindings.mute2Changing = false;
+            bindings.pause1Changing = false;
+            bindings.pause2Changing = false;
+            bindings.fullscreen1Changing = false;
+            bindings.fullscreen2Changing = false;         
+          }
+        }else{
+          if(bindings.leaderboard2Changing === false){
+            bindings.leaderboard2ChangingColor = "white"
+          }
+        }
+        if(mouse.x > 500+(1365/3*2)/2-40 && mouse.x < 500+(1365/3*2)/2-40+(1365/3*2)/2-40 && mouse.y > lineSpace * 16 && mouse.y < lineSpace * 19){
+          if(bindings.mute2Changing === false){
+            bindings.mute2ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = false;
+            bindings.jump2Changing = false;
+            bindings.crouch1Changing = false;
+            bindings.crouch2Changing = false;
+            bindings.leaderboard1Changing = false;
+            bindings.leaderboard2Changing = false;
+            bindings.mute1Changing = false;
+            bindings.mute2Changing = true;
+            bindings.pause1Changing = false;
+            bindings.pause2Changing = false;
+            bindings.fullscreen1Changing = false;
+            bindings.fullscreen2Changing = false;         
+          }
+        }else{
+          if(bindings.mute2Changing === false){
+            bindings.mute2ChangingColor = "white"
+          }
+        }
+        if(mouse.x > 500+(1365/3*2)/2-40 && mouse.x < 500+(1365/3*2)/2-40+(1365/3*2)/2-40 && mouse.y > lineSpace * 19 && mouse.y < lineSpace * 22){
+          if(bindings.pause2Changing === false){
+            bindings.pause2ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = false;
+            bindings.jump2Changing = false;
+            bindings.crouch1Changing = false;
+            bindings.crouch2Changing = false;
+            bindings.leaderboard1Changing = false;
+            bindings.leaderboard2Changing = false;
+            bindings.mute1Changing = false;
+            bindings.mute2Changing = false;
+            bindings.pause1Changing = false;
+            bindings.pause2Changing = true;
+            bindings.fullscreen1Changing = false;
+            bindings.fullscreen2Changing = false;         
+          }
+        }else{
+          if(bindings.pause2Changing === false){
+            bindings.pause2ChangingColor = "white"
+          }
+        }
+        if(mouse.x > 500+(1365/3*2)/2-40 && mouse.x < 500+(1365/3*2)/2-40+(1365/3*2)/2-40 && mouse.y > lineSpace * 22 && mouse.y < lineSpace * 25){
+          if(bindings.fullscreen2Changing === false){
+            bindings.fullscreen2ChangingColor = "#A2A2A2";
+          }
+          if(mouse.click === true){
+            bindings.jump1Changing = false;
+            bindings.jump2Changing = false;
+            bindings.crouch1Changing = false;
+            bindings.crouch2Changing = false;
+            bindings.leaderboard1Changing = false;
+            bindings.leaderboard2Changing = false;
+            bindings.mute1Changing = false;
+            bindings.mute2Changing = false;
+            bindings.pause1Changing = false;
+            bindings.pause2Changing = false;
+            bindings.fullscreen1Changing = false;
+            bindings.fullscreen2Changing = true;         
+          }
+        }else{
+          if(bindings.fullscreen2Changing === false){
+            bindings.fullscreen2ChangingColor = "white"
+          }
+        }
+      if(mouse.x > 500 && mouse.x < 500+1365/3*2-80+(1365/3*2)/2-40 && mouse.y > lineSpace*7 && mouse.y < lineSpace*25){
+
+      }else{
+        if(mouse.click === true){
+          bindings.jump1Changing = false;
+          bindings.jump2Changing = false;
+          bindings.crouch1Changing = false;
+          bindings.crouch2Changing = false;
+          bindings.leaderboard1Changing = false;
+          bindings.leaderboard2Changing = false;
+          bindings.mute1Changing = false;
+          bindings.mute2Changing = false;
+          bindings.pause1Changing = false;
+          bindings.pause2Changing = false;
+          bindings.fullscreen1Changing = false;
+          bindings.fullscreen2Changing = false;
+          bindings.jump1ChangingColor = "white";
+          bindings.jump2ChangingColor = "white";
+          bindings.crouch1ChangingColor = "white";
+          bindings.crouch2ChangingColor = "white";
+          bindings.leaderboard1ChangingColor = "white";
+          bindings.leaderboard2ChangingColor = "white";
+          bindings.mute1ChangingColor = "white";
+          bindings.mute2ChangingColor = "white";
+          bindings.pause1ChangingColor = "white";
+          bindings.pause2ChangingColor = "white";
+          bindings.fullscreen1ChangingColor = "white";
+          bindings.fullscreen2ChangingColor = "white";
+        }
+      }
+
+      if(mouse.x > 20 && mouse.x < (20+400) && mouse.y > 20 && mouse.y < (20+100)){
+        menu.bindingColor = "#A2A2A2";
+        if(mouse.click === true){
+          setTimeout(function(){
+            menu.bindingVisual = false;
+          }, 50)
+        }
+      }else{
+        menu.bindingColor = "white"
+      }
     }
   };
-
+getSession(getCookie("session"));
+console.log("hej")
 
   function jump() {
     dino.jumping = true;
@@ -1679,6 +2266,7 @@
 
 
 
+
   function getCookie(cname) {
     var name = cname + "=";
     var decodedCookie = decodeURIComponent(document.cookie);
@@ -1732,9 +2320,8 @@
     http.onreadystatechange = (e) => {
       userArray = JSON.parse(http.responseText)
       for (let i = 0; i < userArray.length; i++) {
-
         user.encryptedPassword = CryptoJS.MD5(user.passwordInput).toString();
-        if (user.encryptedPassword === userArray[i].password && userArray[i].name === user.usernameInput || user.password === user.password && userArray[i].name === user.username) {
+        if (user.encryptedPassword === userArray[i].password && userArray[i].name === user.usernameInput){
           user.loggedIn = true;
           menumusic.pause();
           menumusic.currentTime = 0;
@@ -1744,31 +2331,39 @@
           user.highscore = userArray[i].score;
           coin.value = userArray[i].coins;
           hat.buyvalue = userArray[i].hats;
-          scores = userArray[i].scoreArray.split(',').map(function(item) {
+          if(user.rememberMe === true){
+            console.log("hej")
+            let session = CryptoJS.MD5(Math.random()*1000000+user.username);
+            sendSession(user.username, session);
+            document.cookie = `session=${session};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
+          }
+          try {
+            scores = userArray[i].scoreArray.split(',').map(function(item) {
             return parseInt(item, 10);
-          });
+            let sum = scores.reduce((previous, current) => current += previous);
+            average = sum / scores.length;
+            });
+          }
+          catch (e) {
+            continue;
+          }
 
-          let sum = scores.reduce((previous, current) => current += previous);
-          average = sum / scores.length;
           
           scores = scores.filter(function(val) {
             return val !== 0;
           });
+          let sum = scores.reduce((previous, current) => current += previous);
+          average = sum / scores.length;
 
 
-          console.log(userArray[i].scoreArray)
-          if(user.rememberMe === true) {
-            document.cookie = `username=${user.username};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
-            document.cookie = `password=${user.password};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
-            document.cookie = `mail=${user.mail};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
-            document.cookie = `loggedIn=${user.loggedIn};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
-          }
-        }else if(user.loggedIn === false){
+        }else{
           user.wrongText = "Wrong username or password";
+          }
         }
+      return userArray;
       };
     };
-  };
+  
 
   function showLeaderboard() {
     if (leaderboardShow == true) {
@@ -1788,6 +2383,47 @@
     http.open("GET", url);
     http.send();
   };
+  
+  function sendSession(username, session){
+    const http = new XMLHttpRequest();
+    const url = `https://l2niipto9l.execute-api.eu-north-1.amazonaws.com/test/sendsession?username=${username}&session=${session.toString()}`;
+    http.open("GET", url);
+    http.send();
+  }
+  function getSession(session){
+    
+    const http = new XMLHttpRequest();
+    const url = `https://l2niipto9l.execute-api.eu-north-1.amazonaws.com/test/getsession`;
+    if(session !== -1){
+      http.open("GET", url);
+      http.send();
+    }
+
+    http.onreadystatechange = (e) => {
+      let sessions = JSON.parse(http.responseText);
+
+      for(let i = 0; i < sessions.length; i++){
+        if(sessions[i].session === session){
+          console.log("inloggad")
+          getScore();
+          setTimeout(function(){
+            for(let l = 0; l < userArray.length; l++){
+              console.log("hej")
+              if(sessions[i].name === userArray[l].name){
+                user.username = userArray[l].name;
+                user.password = userArray[l].password;
+                user.mail = userArray[l].mail;
+                user.highscore = userArray[l].score;
+                coin.value = userArray[l].coins;
+                hat.buyvalue = userArray[l].hats;
+                user.loggedIn = true;
+              }
+            }        
+          },1000);
+        }
+      }
+    }
+  }
 
 
   function teleport() {
@@ -1821,6 +2457,7 @@
 
 getScore();
 
+
 function getVersion(){
   const http = new XMLHttpRequest();
   const url = `https://l2niipto9l.execute-api.eu-north-1.amazonaws.com/test/updateneeded`;
@@ -1833,5 +2470,31 @@ function getVersion(){
         oldVersion = true;
       }
     }
+}
+function mute() {
+  if(muted === false){
+    muted = true;
+    deathMusic.volume = 0;
+    jumpSound.volume = 0;
+    runningMusic.volume = 0;
+    coinSound.volume = 0;
+    death.volume = 0;
+    menumusic.volume = 0;
+    beep1.volume = 0;
+    beep2.volume = 0;
+    return;
+  }
+  if(muted === true){
+    muted = false;
+    deathMusic.volume = 0.5;
+    jumpSound.volume = 1;
+    runningMusic.volume = 1;
+    coinSound.volume = 1;
+    death.volume = 1;
+    menumusic.volume = 1;
+    beep1.volume = 1;
+    beep2.volume = 1;
+    return;
+  }
 }
 })();
