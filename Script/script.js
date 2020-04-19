@@ -1,4 +1,4 @@
-  (function() {
+(function() {
   var canvas = document.getElementById('game-layer');
 
   canvas.width = 1365;
@@ -45,7 +45,8 @@
 
   var death = new Audio('Sounds/Death.mp3');
 
-  var menumusic = new Audio('Sounds/MenuMusic.mp3')
+  var menumusic = new Audio('Sounds/MenuMusic.mp3');
+  var menumusic2 = new Audio('Sounds/MenuMusic2.mp3');
   
   var beep1 = new Audio('/Sounds/beep1.mp3');
   var beep2 = new Audio('/Sounds/beep2.mp3');
@@ -62,12 +63,13 @@
   var lineSpace = 768 / 25;
 
   var leaderboardShow = false;
+  var leaderboardSide = 1;
 
-  var version = "V0.1.4"
+  var version = "V0.1.5";
 
   var oldVersion = false;
 
-  var scores = [];
+  var scores = [0];
   scores.unshift(Math.floor(0));
 
   var average = 0;
@@ -188,7 +190,7 @@
     x: undefined,
     y: undefined,
     click: false
-  }
+  };
   var menu = {
     paused: true,
     shopVisual: false,
@@ -204,7 +206,10 @@
     text7: "Buy for 2500 Gold",
     equipedLife: Number(getCookie("equipedLife") === -1 ? 0 : getCookie("equipedLife")),
     bindingVisual: false,
-    bindingColor: "white"
+    bindingColor: "white",
+    avgColor: "black",
+    avgVisual: false,
+    yeeColor: "white"
   };
   var bindings = getCookie("bindings") === -1 ? {
     jump1: "Space",
@@ -262,8 +267,8 @@
     equipedHat:Number(getCookie("equipedHat") === -1 ? 0 : getCookie("equipedHat")),
     hatboost: 0,
     fly: false
-  }
-  
+  };
+
   if(user.loggedIn === "true" || user.loggedIn === true) {
     getScore();
     setTimeout(function(){
@@ -336,6 +341,7 @@
         mute();
       }
     }
+    
     if (event.code === bindings.fullscreen1 || event.code === bindings.fullscreen2) {
       if (canvas.RequestFullScreen) {
         canvas.RequestFullScreen();
@@ -393,10 +399,7 @@
       user.passwordInput += event.key;
       user.passwordInputVisual += "•"
     }
-
-
-
-    if (event.code === bindings.jump1 || event.code === bindings.jump2) {
+if (event.code === bindings.jump1 || event.code === bindings.jump2) {
       if(dino.inAir === false && dino.died === false && user.loggedIn === true && menu.shopVisual === false && menu.bindingVisual === false){
         if (dino.stand === true && dino.start === true) {
           jump();
@@ -432,6 +435,9 @@
         }
       }
     }
+
+
+
   });
   window.addEventListener('keyup', function (event) {
     if (event.code === bindings.crouch1 && menu.bindingVisual === false || event.code === bindings.crouch2 && menu.bindingVisual === false) {
@@ -452,13 +458,24 @@
 
     c.clearRect(0, 0, canvas.width, canvas.height);
     
-    scores = scores.filter(function(val) {
-        return val !== 0;
-    });
+    if(scores.length > 1){
+      scores = scores.filter(function(val) {
+          return val !== 0;
+      });
+    }
     if(scores === []){
       scores = [0];
     }
-
+    if(user.loggedIn === true){
+      if(scores === 0){
+        scores = [0]
+      }
+      if(scores !== 0 && scores !== []){
+        let sum = scores.reduce((previous, current) => current += previous);
+        average = sum / scores.length;
+    
+      }
+    }
 
     if (dino.animationState === 1) {
       dino.image = 'Images/Dinosaur/dino1.png';
@@ -829,6 +846,8 @@
           if(menu.shopVisual === true){
             menu.shopVisual = false;
             menu.shoptext = "Shop"
+            menumusic.pause();
+            menumusic.currentTime = 0;            
             return;
           }
         }
@@ -851,8 +870,21 @@
       c.fillStyle = "black";
       c.textBaseline = "ideographic";
       if(menu.shopVisual === false && leaderboardShow === false){
-        c.fillText("Avg   "+averageVisual, 1320, 190);
-      }
+          c.fillStyle = menu.avgColor;
+          c.fillText("Avg   "+averageVisual, 1320, 190);
+          if(mouse.x < 1320 && mouse.x > 1320-450 && mouse.y > 100 && mouse.y < 200){
+            menu.avgColor = "#A2A2A2";
+            if(mouse.click === true){
+              if(menu.avgVisual === false){
+                menu.avgVisual = true;
+              }else{
+                menu.avgVisual = false;
+              }
+            }
+          }else{
+            menu.avgColor = "black"
+          }
+        }
       if (dino.playOnce == false) {
         death.play();
         dino.playOnce = true;
@@ -861,7 +893,7 @@
         if (mouse.x > 1365 - 420 && mouse.x < 1365 - 20 && mouse.y > 768 - 120 && mouse.y < 768 - 20) {
           user.logOutColor = "#A2A2A2"
           if (mouse.click === true) {
-            exitDeath()
+            exitDeath();
             user = {
               highscore: 0,
               username: undefined,
@@ -895,6 +927,8 @@
             heart2Img.src = "";
             scores = [0]
             document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "equipedHat=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "equipedLife=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
           }
         } else {
           user.logOutColor = "white";
@@ -1090,6 +1124,7 @@
     c.font = "500px IMPACT, Sans-serif";
     c.fillText(dino.timer, 1365/2, 768/6*5);
     if(menu.shopVisual === true){
+      menumusic.play()
       c.textAlign = "center"
       c.fillStyle = "#1270CE";
       c.fillRect(0, 0, 1365, 768);
@@ -1181,54 +1216,54 @@
         menu.sideValue -= 25;
       }
       if(hatArray[0] === "1" && hat.equipedHat !== 1){
-        hat.text1 = "Equip"
+        hat.text1 = "Equip";
       }else if(hat.equipedHat === 1){
-        hat.text1 = "Unequip"
+        hat.text1 = "Unequip";
       }else{
-        hat.text1 = "Buy for 25 Gold"
+        hat.text1 = "Buy for 25 Gold";
       }
       if(hatArray[1] === "1" && hat.equipedHat !== 2){
-        hat.text2 = "Equip"
+        hat.text2 = "Equip";
       }else if(hat.equipedHat === 2){
-        hat.text2 = "Unequip"
+        hat.text2 = "Unequip";
       }else{
-        hat.text2 = "Buy for 50 Gold"
+        hat.text2 = "Buy for 50 Gold";
       }
 
       if(hatArray[2] === "1" && hat.equipedHat !== 3){
-        hat.text3 = "Equip"
+        hat.text3 = "Equip";
       }else if(hat.equipedHat === 3){
-        hat.text3 = "Unequip"
+        hat.text3 = "Unequip";
       }else{
-        hat.text3 = "Buy for 150 Gold"
+        hat.text3 = "Buy for 150 Gold";
       }
       if(hatArray[3] === "1" && hat.equipedHat !== 4){
-        hat.text4 = "Equip"
+        hat.text4 = "Equip";
       }else if(hat.equipedHat === 4){
-        hat.text4 = "Unequip"
+        hat.text4 = "Unequip";
       }else{
-        hat.text4 = "Buy for 300 Gold"
+        hat.text4 = "Buy for 300 Gold";
       }
       if(hatArray[4] === "1" && hat.equipedHat !== 5){
-        hat.text5 = "Equip"
+        hat.text5 = "Equip";
       }else if(hat.equipedHat === 5){
-        hat.text5 = "Unequip"
+        hat.text5 = "Unequip";
       }else{
-        hat.text5 = "Buy for 500 Gold"
+        hat.text5 = "Buy for 500 Gold";
       }
       if(hatArray[5] === "1" && menu.equipedLife !== 1){
-        menu.text6 = "Equip"
+        menu.text6 = "Equip";
       }else if(menu.equipedLife === 1){
-        menu.text6 = "Unequip"
+        menu.text6 = "Unequip";
       }else{
-        menu.text6 = "Buy for 1500 Gold"
+        menu.text6 = "Buy for 1500 Gold";
       }
       if(hatArray[6] === "1" && menu.equipedLife !== 2){
-        menu.text7 = "Equip"
+        menu.text7 = "Equip";
       }else if(menu.equipedLife === 2){
-        menu.text7 = "Unequip"
+        menu.text7 = "Unequip";
       }else{
-        menu.text7 = "Buy for 2500 Gold"
+        menu.text7 = "Buy for 2500 Gold";
       }
       if(mouse.x > 120+1365-menu.sideValue && mouse.x < 520+1365-menu.sideValue && mouse.y > 150 && mouse.y < 250){
         menu.color6 = "#A2A2A2";
@@ -1249,6 +1284,7 @@
           }else{
             heartImg.src = ""
             menu.equipedLife = 0;
+            document.cookie = "equipedLife=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             dino.lives = 0;
           }
         }
@@ -1275,6 +1311,7 @@
             heartImg.src = ""
             heart2Img.src = ""
             menu.equipedLife = 0;
+            document.cookie = "equipedLife=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             dino.lives = 0
           }
         }
@@ -1299,6 +1336,7 @@
           }else{
             hatImg.src = ""
             hat.equipedHat = 0;
+            document.cookie = "equipedHat=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             hat.hatboost = 0;
           }
         }
@@ -1323,6 +1361,7 @@
           }else{
             hatImg.src = ""
             hat.equipedHat = 0;
+            document.cookie = "equipedHat=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             hat.hatboost = 0;
           }
         }
@@ -1347,6 +1386,7 @@
           }else{
             hatImg.src = ""
             hat.equipedHat = 0;
+            document.cookie = "equipedHat=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             hat.hatboost = 0;
           }
         }
@@ -1371,6 +1411,7 @@
           }else{
             hatImg.src = ""
             hat.equipedHat = 0;
+            document.cookie = "equipedHat=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             hat.hatboost = 0;
           }
         }
@@ -1395,6 +1436,7 @@
           }else{
             hatImg.src = ""
             hat.equipedHat = 0;
+            document.cookie = "equipedHat=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             hat.hatboost = 0;
           }
         }
@@ -1405,7 +1447,7 @@
     
 
     if (user.loggedIn === false) {
-      menumusic.play();
+      menumusic2.play();
       c.fillStyle = "black";
       c.fillRect(100, 100, 1365 - 200, 768 - 200);
       c.fillStyle = "white";
@@ -1414,7 +1456,7 @@
       c.fillRect(1365 / 3 * 2 - 120, 500, 100, 55);
       c.fillStyle = "white";
       c.font = "75px IMPACT, Sans-serif";
-      c.fillText(`"Remember me" is broken`, 1365 / 2, 200)
+      c.fillText("Please login to play!", 1365 / 2, 200)
       c.fillStyle = "red"
       c.font = "75px IMPACT, Sans-serif";
       c.fillText(user.wrongText, 1365 / 2, 400)
@@ -1499,7 +1541,48 @@
         c.fillStyle = "black";
         c.textBaseline = "ideographic";
         if(menu.shopVisual === false && leaderboardShow === false){
+          c.fillStyle = menu.avgColor;
           c.fillText("Avg   "+averageVisual, 1320, 190);
+          if(mouse.x < 1320 && mouse.x > 1320-450 && mouse.y > 100 && mouse.y < 200){
+            menu.avgColor = "#A2A2A2";
+            if(mouse.click === true){
+              if(menu.avgVisual === false){
+                menu.avgVisual = true;
+              }else{
+                menu.avgVisual = false;
+              }
+            }
+          }else{
+            menu.avgColor = "black"
+          }
+        }
+      }
+      if(menu.avgVisual === true){
+        c.fillStyle = "black";
+        c.fillRect(1365/3, 768/5, (1365/3), (768/5)*3)
+        c.fillStyle = "white";
+        c.font = "bold 35px IMPACT,Sans-serif";
+        c.textAlign = "center"
+        c.fillText("Reset average",1365/2, 768/5+50);
+        c.fillText("(Costs 150 gold)",1365/2, 768/5+95);
+        c.font = "bold 75px IMPACT,Sans-serif";
+        c.fillStyle = menu.yeeColor;
+        c.fillText("yee", 1365/2, 768/3+300);
+
+        if(mouse.x > 620 && mouse.y > 490 && mouse.x < 740 && mouse.y < 540){
+          menu.yeeColor = "#A2A2A2";
+          if(mouse.click){
+            if(coin.value >= 150){
+              coin.value -= 150;
+              scores = 0;
+              sendScore(user.username, Math.floor(user.highscore), user.password, user.mail, Math.floor(coin.value), hat.buyvalue, scores);
+              menu.avgVisual = false;
+              let sum = scores.reduce((previous, current) => current += previous);
+              average = sum / scores.length;
+            }
+          }
+        }else{
+          menu.yeeColor = "white"
         }
       }
       if(dino.startedrunning === false && menu.bindingVisual === false){
@@ -1519,6 +1602,8 @@
             if(menu.shopVisual === true){
               menu.shopVisual = false;
               menu.shoptext = "Shop"
+              menumusic.pause();
+              menumusic.currentTime = 0;
               return;
             }
           }
@@ -1548,7 +1633,7 @@
         if (mouse.x > 1365 - 420 && mouse.x < 1365 - 20 && mouse.y > 768 - 120 && mouse.y < 768 - 20) {
           user.logOutColor = "#A2A2A2"
           if (mouse.click === true) {
-            exitDeath()
+            exitDeath();
             user = {
               highscore: 0,
               username: undefined,
@@ -1581,8 +1666,10 @@
             heartImg.src = "";
             heart2Img.src = "";
             average = 0;
-            scores = [0];
+            scores = 0;
             document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "equipedHat=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            document.cookie = "equipedLife=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
           }
         } else {
           user.logOutColor = "white";
@@ -1592,48 +1679,119 @@
     if (leaderboardShow === true) {
       for (var i = 0; i < userArray.length; i++) {
         if(userArray[i].name === "Knullbullepojken"){
-          userArray[i].name = "Kanelbullepojken"
+          userArray[i].name = "Kanelbullepojken";
         }
         if(userArray[i].name === "månsärlitegay"){
-          userArray[i].name = "månsärlitecool"        
+          userArray[i].name = "månsärlitecool";     
         }
         if(userArray[i].name === "FuL"){
-          userArray[i].name = "FiN"
+          userArray[i].name = "FiN";
         }
         if(userArray[i].name === "måns e lite gay"){
-          userArray[i].name = "måns e lite fin"
+          userArray[i].name = "måns e lite fin";
         }
-
       }
 
-      c.textAlign = "center"
+      c.textAlign = "center";
       c.fillStyle = "#1270CE";
       c.fillRect(1365 / 20 + 10, 768 / 20 + 10, 1365 - 1365 / 10 - 20, 768 - 768 / 10 - 20);
 
-      c.fillStyle = "white";
-
-      c.fillStyle = "white";
-
+      c.fillStyle = "white"
       c.font = " " + 1365 / 30 + "px Impact, Sans-serif";
 
-      c.fillText("Leaderboard", 1365 / 2, lineSpace * 3);
+      if(leaderboardSide === 1){
 
-      c.fillStyle = "#d4af37";
-      c.fillText("1." + userArray[0].name + ": " + userArray[0].score + " Points", 1365 / 2, lineSpace * 5);
-      c.fillStyle = "#C0C0C0";
-      c.fillText("2." + userArray[1].name + ": " + userArray[1].score + " Points", 1365 / 2, lineSpace * 7);
-      c.fillStyle = "#cd7f32";
-      c.fillText("3." + userArray[2].name + ": " + userArray[2].score + " Points", 1365 / 2, lineSpace * 9);
-      c.fillStyle = "white";
-      c.fillText("4." + userArray[3].name + ": " + userArray[3].score + " Points", 1365 / 2, lineSpace * 11);
-      c.fillText("5." + userArray[4].name + ": " + userArray[4].score + " Points", 1365 / 2, lineSpace * 13);
-      c.fillText("6." + userArray[5].name + ": " + userArray[5].score + " Points", 1365 / 2, lineSpace * 15);
-      c.fillText("7." + userArray[6].name + ": " + userArray[6].score + " Points", 1365 / 2, lineSpace * 17);
-      c.fillText("8." + userArray[7].name + ": " + userArray[7].score + " Points", 1365 / 2, lineSpace * 19);
-      c.fillText("9." + userArray[8].name + ": " + userArray[8].score + " Points", 1365 / 2, lineSpace * 21);
-      c.fillText("10." + userArray[9].name + ": " + userArray[9].score + " Points", 1365 / 2, lineSpace * 23);
+        userArray.sort(comparescore);
+        c.textAlign = "center";
+        c.fillStyle = "white";
+        c.fillText("Leaderboard(Highscores)", 1365 / 2, lineSpace * 3+10);
+        c.fillStyle = "#d4af37";
+        c.fillText("1." + userArray[0].name + ": " + userArray[0].score + " Points", 1365 / 2, lineSpace * 5);
+        c.fillStyle = "#C0C0C0";
+        c.fillText("2." + userArray[1].name + ": " + userArray[1].score + " Points", 1365 / 2, lineSpace * 7);
+        c.fillStyle = "#cd7f32";
+        c.fillText("3." + userArray[2].name + ": " + userArray[2].score + " Points", 1365 / 2, lineSpace * 9);
+        c.fillStyle = "white";
+        c.fillText("4." + userArray[3].name + ": " + userArray[3].score + " Points", 1365 / 2, lineSpace * 11);
+        c.fillText("5." + userArray[4].name + ": " + userArray[4].score + " Points", 1365 / 2, lineSpace * 13);
+        c.fillText("6." + userArray[5].name + ": " + userArray[5].score + " Points", 1365 / 2, lineSpace * 15);
+        c.fillText("7." + userArray[6].name + ": " + userArray[6].score + " Points", 1365 / 2, lineSpace * 17);
+        c.fillText("8." + userArray[7].name + ": " + userArray[7].score + " Points", 1365 / 2, lineSpace * 19);
+        c.fillText("9." + userArray[8].name + ": " + userArray[8].score + " Points", 1365 / 2, lineSpace * 21);
+        c.fillText("10." + userArray[9].name + ": " + userArray[9].score + " Points", 1365 / 2, lineSpace * 23);
+
+        if(mouse.x > 1130 && mouse.x < 1230 && mouse.y > lineSpace*6 && mouse.y < lineSpace*6+100){
+          leaderboardColor = "#A2A2A2";
+          if(mouse.click === true){
+            leaderboardSide = 2;
+          }
+        }else{
+          var leaderboardColor = "white"
+        }
+        c.fillStyle = "black";
+        c.fillRect(1130,  lineSpace*6 , 100, 100)
+        c.fillStyle = leaderboardColor;
+        c.font = "bold 80px IMPACT,Sans-serif";
+        c.fillText(">", 1180,  lineSpace*9+10);
+
+
+      }
+      if(leaderboardSide === 2){
+        for(var g = 0; g < userArray.length; g++){
+          try {
+              if(userArray[g].name === "undefined"){
+                continue;
+              }
+                arr = userArray[g].scoreArray.split(',').map(function(item) {
+                return parseInt(item, 10);
+                })
+              
+              let sum = arr.reduce((previous, current) => current += previous);
+              userArray[g].average = sum / arr.length;
+          }
+          catch (e) {
+            continue;
+          }
+        }
+        userArray.sort(function(a, b){
+            return b.average-a.average
+        })
+
+        c.fillStyle = "white";
+        c.textAlign = "center"
+        c.fillText("Leaderboard(Average)", 1365 / 2, lineSpace * 3+10);
+        c.fillStyle = "#d4af37";
+        c.fillText("1." + userArray[0].name + ": " + Math.floor(userArray[0].average) + " Points", 1365 / 2, lineSpace * 5);
+        c.fillStyle = "#C0C0C0";
+        c.fillText("2." + userArray[1].name + ": " + Math.floor(userArray[1].average) + " Points", 1365 / 2, lineSpace * 7);
+        c.fillStyle = "#cd7f32";
+        c.fillText("3." + userArray[2].name + ": " + Math.floor(userArray[2].average) + " Points", 1365 / 2, lineSpace * 9);
+        c.fillStyle = "white";
+        c.fillText("4." + userArray[3].name + ": " + Math.floor(userArray[3].average) + " Points", 1365 / 2, lineSpace * 11);
+        c.fillText("5." + userArray[4].name + ": " +Math.floor(userArray[4].average) + " Points", 1365 / 2, lineSpace * 13);
+        c.fillText("6." + userArray[5].name + ": " + Math.floor(userArray[5].average) + " Points", 1365 / 2, lineSpace * 15);
+        c.fillText("7." + userArray[6].name + ": " + Math.floor(userArray[6].average) + " Points", 1365 / 2, lineSpace * 17);
+        c.fillText("8." + userArray[7].name + ": " + Math.floor(userArray[7].average) + " Points", 1365 / 2, lineSpace * 19);
+        c.fillText("9." + userArray[8].name + ": " + Math.floor(userArray[8].average) + " Points", 1365 / 2, lineSpace * 21);
+        c.fillText("10." + userArray[9].name + ": " + Math.floor(userArray[9].average) + " Points", 1365 / 2, lineSpace * 23);
+        if(mouse.x > 120 && mouse.x < 220 && mouse.y > lineSpace*6 && mouse.y < lineSpace*6+100){
+          leaderboardColor = "#A2A2A2";
+          if(mouse.click === true){
+            leaderboardSide = 1;
+          }
+        }else{
+          var leaderboardColor = "white"
+        }
+        c.fillStyle = "black";
+        c.fillRect(120,  lineSpace*6 , 100, 100)
+        c.fillStyle = leaderboardColor;
+        c.font = "bold 80px IMPACT,Sans-serif";
+        c.fillText("<", 170,  lineSpace*9+10);
+
+      }
     }
     if(menu.bindingVisual === true){
+      menumusic.play();
       c.textAlign = "center"
       c.fillStyle = "#1270CE";
       c.fillRect(0, 0, 1365, 768);
@@ -2112,6 +2270,8 @@
         if(mouse.click === true){
           setTimeout(function(){
             menu.bindingVisual = false;
+            menumusic.pause();
+            menumusic.currentTime = 0;
           }, 50)
         }
       }else{
@@ -2119,8 +2279,9 @@
       }
     }
   };
-getSession(getCookie("session"));
-console.log("hej")
+setTimeout(function(){
+  getSession(getCookie("session"));
+}, 1000)
 
   function jump() {
     dino.jumping = true;
@@ -2323,8 +2484,8 @@ console.log("hej")
         user.encryptedPassword = CryptoJS.MD5(user.passwordInput).toString();
         if (user.encryptedPassword === userArray[i].password && userArray[i].name === user.usernameInput){
           user.loggedIn = true;
-          menumusic.pause();
-          menumusic.currentTime = 0;
+          menumusic2.pause();
+          menumusic2.currentTime = 0;
           user.username = userArray[i].name;
           user.password = userArray[i].password;
           user.mail = userArray[i].mail;
@@ -2333,16 +2494,22 @@ console.log("hej")
           hat.buyvalue = userArray[i].hats;
           if(user.rememberMe === true){
             console.log("hej")
-            let session = CryptoJS.MD5(Math.random()*1000000+user.username);
+            var session = CryptoJS.MD5(Math.random()*1000000+user.username);
             sendSession(user.username, session);
             document.cookie = `session=${session};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
           }
           try {
+            if(userArray[i].scoreArray !== 0){
             scores = userArray[i].scoreArray.split(',').map(function(item) {
             return parseInt(item, 10);
             let sum = scores.reduce((previous, current) => current += previous);
             average = sum / scores.length;
+          
+            
             });
+            }else{
+              scores = [0];
+            }
           }
           catch (e) {
             continue;
@@ -2416,7 +2583,14 @@ console.log("hej")
                 user.highscore = userArray[l].score;
                 coin.value = userArray[l].coins;
                 hat.buyvalue = userArray[l].hats;
+                scores = userArray[l].scoreArray.split(',').map(function(item) {
+                return parseInt(item, 10);
+                let sum = scores.reduce((previous, current) => current += previous);
+                average = sum / scores.length;
+                });                
                 user.loggedIn = true;
+                menumusic2.pause();
+                menumusic2.currentTime = 0;
               }
             }        
           },1000);
@@ -2480,6 +2654,7 @@ function mute() {
     coinSound.volume = 0;
     death.volume = 0;
     menumusic.volume = 0;
+    menumusic2.volume = 0;
     beep1.volume = 0;
     beep2.volume = 0;
     return;
@@ -2492,9 +2667,30 @@ function mute() {
     coinSound.volume = 1;
     death.volume = 1;
     menumusic.volume = 1;
+    menumusic2.volume = 1;
     beep1.volume = 1;
     beep2.volume = 1;
     return;
   }
 }
+
+function comparescore(a, b) {
+
+    let scoreA = a.score;
+    let scoreB = b.score;
+    
+    return scoreB - scoreA;
+}
+function compareAverage(a, b) {
+
+    let scoreA = a.average;
+    let scoreB = b.average;
+    
+    return scoreB - scoreA;
+}
 })();
+
+c.textAlign = "right";
+c.font = "bold 30px IMPACT,Sans-serif";
+c.fillText("x:"+mouse.x, mouse.x, mouse.y);
+c.fillText("y:"+mouse.y, mouse.x, mouse.y+20);
