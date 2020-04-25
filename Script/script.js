@@ -1,3 +1,4 @@
+
 (function() {
   var canvas = document.getElementById('game-layer');
 
@@ -28,6 +29,8 @@
 
   var cactus3Img = new Image();
 
+  var cactus4Img = new Image();
+
   var bird1Img = new Image();
 
   var coinImg = new Image();
@@ -56,7 +59,7 @@
 
 
 
-  var standardHeight = 480;
+  var standardHeight = 460;
 
   var userArray = [];
 
@@ -65,7 +68,7 @@
   var leaderboardShow = false;
   var leaderboardSide = 1;
 
-  var version = "V0.1.5";
+  var version = "V0.1.6 Experimental";
 
   var oldVersion = false;
 
@@ -101,7 +104,8 @@
     rememberMe: false,
     encryptedPassword: undefined,
     logOutColor: "white",
-    wrongText: ""
+    wrongText: "Checking identification... Pls wait",
+    wrongColor: "white"
   };
 
   var dino = {
@@ -307,6 +311,24 @@
     hatImg.src = "Images/Hats/5.png"
     hat.hatboost = 0.075;
   }
+
+
+
+  CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius) {
+  if (width < 2 * radius) radius = width / 2;
+  if (height < 2 * radius) radius = height / 2;
+  this.beginPath();
+  this.moveTo(x + radius, y);
+  this.arcTo(x + width, y, x + width, y + height, radius);
+  this.arcTo(x + width, y + height, x, y + height, radius);
+  this.arcTo(x, y + height, x, y, radius);
+  this.arcTo(x, y, x + width, y, radius);
+  this.closePath();
+  return this;
+}
+
+
+
   document.addEventListener('mouseleave', function(event){
     if(document.fullscreenElement){
     }else{
@@ -337,7 +359,7 @@
   window.addEventListener('keydown', function (event) {
     console.log(event)
     if(event.code === bindings.mute1 || event.code === bindings.mute2){
-      if(menu.bindingVisual === false){
+      if(menu.bindingVisual === false && user.puttingInPassword === false && user.puttingInUsername === false){
         mute();
       }
     }
@@ -390,6 +412,42 @@
       user.passwordInput = user.passwordInput.slice(0, -1);
       user.passwordInputVisual = user.passwordInputVisual.slice(0, -1);
     }
+    if (event.code === bindings.jump1 || event.code === bindings.jump2) {
+          if(dino.inAir === false && dino.died === false && user.loggedIn === true && menu.shopVisual === false && menu.bindingVisual === false){
+            if (dino.stand === true && dino.start === true) {
+              jump();
+              dino.stand = false;
+              dino.startedrunning = true;
+            }
+            if (dino.stand === false) {
+              jump();
+              dino.startedrunning = true;
+            }
+            if (dino.start === false && dino.stand === true && dino.timer === "") {
+              beep1.play();
+              dino.timer = "3";
+              menu.paused = false;
+              setTimeout(function () {
+                beep1.currentTime = 0;
+                beep1.play();
+                dino.timer = "2";
+              }, 1000)
+              setTimeout(function () {
+                dino.timer = "1";
+                beep1.currentTime = 0;
+                beep1.play();
+              }, 2000)
+              setTimeout(function () {
+                dino.stand = false;
+                dino.startedrunning = true;
+                dino.timer = "";
+                beep2.currentTime = 0;
+                beep2.play()
+                runningMusic.play();
+              }, 3000);
+            }
+          }
+    }
   });
   window.addEventListener('keypress', function (event) {
     if (user.puttingInUsername === true && event.key !== "Enter" && user.usernameInput.length < 20) {
@@ -399,42 +457,8 @@
       user.passwordInput += event.key;
       user.passwordInputVisual += "•"
     }
-if (event.code === bindings.jump1 || event.code === bindings.jump2) {
-      if(dino.inAir === false && dino.died === false && user.loggedIn === true && menu.shopVisual === false && menu.bindingVisual === false){
-        if (dino.stand === true && dino.start === true) {
-          jump();
-          dino.stand = false;
-          dino.startedrunning = true;
-        }
-        if (dino.stand === false) {
-          jump();
-          dino.startedrunning = true;
-        }
-        if (dino.start === false && dino.stand === true && dino.timer === "") {
-          beep1.play();
-          dino.timer = "3";
-          menu.paused = false;
-          setTimeout(function () {
-            beep1.currentTime = 0;
-            beep1.play();
-            dino.timer = "2";
-          }, 1000)
-          setTimeout(function () {
-            dino.timer = "1";
-            beep1.currentTime = 0;
-            beep1.play();
-          }, 2000)
-          setTimeout(function () {
-            dino.stand = false;
-            dino.startedrunning = true;
-            dino.timer = "";
-            beep2.currentTime = 0;
-            beep2.play()
-            runningMusic.play();
-          }, 3000);
-        }
-      }
-    }
+
+    
 
 
 
@@ -454,7 +478,12 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
 
 
   function update() {
+    
     requestAnimationFrame(update);
+
+    if (location.protocol !== 'https:') {
+        location.replace(`https:${location.href.substring(location.protocol.length)}`);
+    }    
 
     c.clearRect(0, 0, canvas.width, canvas.height);
     
@@ -463,6 +492,9 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
           return val !== 0;
       });
     }
+    if(scores === null){
+      scores = [0];
+    }
     if(scores === []){
       scores = [0];
     }
@@ -470,7 +502,7 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
       if(scores === 0){
         scores = [0]
       }
-      if(scores !== 0 && scores !== []){
+      if(scores !== 0 && scores !== [] && scores.length >= 1){
         let sum = scores.reduce((previous, current) => current += previous);
         average = sum / scores.length;
     
@@ -513,7 +545,7 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
 
 
     if (back1Img.complete) {
-      c.drawImage(back1Img, Math.floor(back1.x), back1.y);
+      c.drawImage(back1Img, Math.floor(back1.x), back1.y, 1365, 768);
       back1Img.src = 'Images/Background/back1.png';
     } else {
       back1Img.addEventListener('load', loaded)
@@ -521,7 +553,7 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
       })
     }
     if (back2Img.complete) {
-      c.drawImage(back2Img, Math.floor(back2.x), back2.y);
+      c.drawImage(back2Img, Math.floor(back2.x), back2.y, 1365, 768);
       back2Img.src = 'Images/Background/back2.png';
     } else {
       back2Img.addEventListener('load', loaded)
@@ -562,8 +594,8 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
     }
 
     if (cactus1Img.complete) {
-      c.drawImage(cactus1Img, Math.floor(cactus1.x), cactus1.y);
-      cactus1Img.src = 'Images/Cactus/cactus1.png';
+      c.drawImage(cactus1Img, Math.floor(cactus1.x), cactus1.y-20);
+      cactus1Img.src = 'Images/Obstacles/cactus1.png';
     } else {
       cactus1Img.addEventListener('load', loaded)
       cactus1Img.addEventListener('error', function () {
@@ -571,9 +603,8 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
     }
 
     if (cactus2Img.complete) {
-      c.drawImage(cactus2Img, Math.floor(cactus2.x), cactus2.y);
-      c.drawImage(cactus2Img, Math.floor(cactus4.x), cactus4.y);
-      cactus2Img.src = 'Images/Cactus/cactus2.png';
+      c.drawImage(cactus2Img, Math.floor(cactus2.x), cactus2.y-20);
+      cactus2Img.src = 'Images/Obstacles/cactus2.png';
 
     } else {
       cactus2Img.addEventListener('load', loaded)
@@ -581,10 +612,18 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
       })
     }
     if (cactus3Img.complete) {
-      c.drawImage(cactus3Img, Math.floor(cactus3.x), cactus3.y - 15);
-      cactus3Img.src = 'Images/Cactus/cactus3.png';
+      c.drawImage(cactus3Img, Math.floor(cactus3.x), cactus3.y - 20);
+      cactus3Img.src = 'Images/Obstacles/cactus3.png';
     } else {
       cactus3Img.addEventListener('load', loaded)
+    }
+    if (cactus4Img.complete) {
+      c.drawImage(cactus4Img, Math.floor(cactus4.x), cactus4.y - 20);
+      cactus4Img.src = 'Images/Obstacles/stone1.png';
+    } else {
+      cactus4Img.addEventListener('load', loaded)
+      cactus4Img.addEventListener('error', function () {
+      })
     }
     if (coinImg.complete) {
       c.drawImage(coinImg, Math.floor(coin.x), Math.floor(coin.y), 200, 200);
@@ -606,19 +645,17 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
 
     if (back1.x < -1365 && dino.backwards === false) {
       back1.x = 1365 - dino.speed;
-      back2.x = 0 - dino.speed;
+      back2.x = back1.x-1365
     }
     if (back2.x < -1365 && dino.backwards === false) {
       back2.x = 1365 - dino.speed;
-      back1.x = 0 - dino.speed;
+      back1.x = back2.x-1365
     }
     if (back1.x > 1365 && dino.backwards === true) {
       back1.x = -1365 - dino.speed;
-      back2.x = 0 - dino.speed;
     }
     if (back2.x > 1365 && dino.backwards === true) {
       back2.x = -1365 - dino.speed;
-      back1.x = 0 - dino.speed;
     }
 
     if (dino.speed < 0) {
@@ -829,39 +866,15 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
     if (dino.died === true) {
 
 
-      c.fillStyle = "black"
-      c.font = "75px IMPACT, Sans-serif";
-      c.fillRect(1365-420, 768-240, 400, 100)
-      c.fillStyle = menu.shopcolor;
-      c.textAlign = "center";
-      c.fillText(menu.shoptext, 1365 - 210, 768 - 150);
-      if(mouse.x > 1365 - 420 && mouse.x < 1365 - 20 && mouse.y > 768-240 && mouse.y < 768 - 140){
-        menu.shopcolor = "#A2A2A2";
-        if(mouse.click === true){
-          if(menu.shopVisual === false){
-            menu.shopVisual = true;
-            exitDeath();
-            return;
-          }
-          if(menu.shopVisual === true){
-            menu.shopVisual = false;
-            menu.shoptext = "Shop"
-            menumusic.pause();
-            menumusic.currentTime = 0;            
-            return;
-          }
-        }
-      }else{
-        menu.shopcolor = "white"
-      }
-
       dino.animationState = 6;
-
+      c.font = "bold 75px IMPACT,sans-serif";
       deathMusic.play();
       runningMusic.pause();
       runningMusic.currentTime = 0;
-      c.fillStyle = "black"
-      c.fillRect(1365 - 420, 768 - 120, 400, 100)
+      c.roundRect(1365 - 420, 768 - 120, 400, 100, 10);
+
+      c.fillStyle = gradient([1365-420, 768-120, 400+1365-420, 10+768-120, "black", "#696969"]);
+      c.fill();
       c.fillStyle = user.logOutColor;
       c.textAlign = "center";
       c.fillText("Log out", 1365 - 210, 768 - 30);
@@ -1151,24 +1164,52 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
         heartsImg.addEventListener('error', function () {
         })
       }
-      c.fillStyle = "black"
-      c.fillRect(1200-menu.sideValue, 410, 100, 100);
-      c.fillStyle = "black"
-      c.fillRect(150+1250-menu.sideValue, 410, 100, 100);
-      c.fillStyle = "black"
-      c.fillRect(100-menu.sideValue, 658, 400, 100);
-      c.fillStyle = "black"
-      c.fillRect(510-menu.sideValue, 658, 400, 100);
-      c.fillStyle = "black"
-      c.fillRect(100-menu.sideValue, 290, 400, 100);
-      c.fillStyle = "black"
-      c.fillRect(510-menu.sideValue, 290, 400, 100);
-      c.fillStyle = "black"
-      c.fillRect(920-menu.sideValue, 290, 400, 100);
-      c.textAlign = "center"
-      c.fillRect(120+1365-menu.sideValue, 150, 400, 100);
-      c.fillStyle = "black"
-      c.fillRect(700+1365-menu.sideValue, 150, 400, 100);
+
+      c.roundRect(1200-menu.sideValue, 410, 100, 100, 10);
+
+      c.fillStyle = gradient([1200-menu.sideValue, 410, 100+1200-menu.sideValue, 100+410, "black", "#696969"]);
+      c.fill();
+
+      c.roundRect(150+1250-menu.sideValue, 410, 100, 100, 10);
+
+      c.fillStyle = gradient([1200-menu.sideValue+150, 410, 100+1200-menu.sideValue+150, 100+410, "black", "#696969"]);
+      c.fill();
+
+      c.roundRect(100-menu.sideValue, 658, 400, 100, 10);
+
+      c.fillStyle = gradient([100-menu.sideValue, 658, 400+100-menu.sideValue, 100+658, "black", "#696969"]);
+      c.fill();
+
+      c.roundRect(510-menu.sideValue, 658, 400, 100, 10);
+
+      c.fillStyle = gradient([510-menu.sideValue, 658, 400+510-menu.sideValue, 100+658, "black", "#696969"]);
+      c.fill();
+
+      c.roundRect(100-menu.sideValue, 290, 400, 100, 10);
+
+      c.fillStyle = gradient([100-menu.sideValue, 290, 400+100-menu.sideValue, 100+290, "black", "#696969"]);
+      c.fill();
+
+      c.roundRect(510-menu.sideValue, 290, 400, 100, 10);
+
+      c.fillStyle = gradient([510-menu.sideValue, 658, 400+510-menu.sideValue, 100+658, "black", "#696969"]);
+      c.fill();
+
+      c.roundRect(920-menu.sideValue, 290, 400, 100, 10);
+
+      c.fillStyle = gradient([920-menu.sideValue, 290, 400+920-menu.sideValue, 100+290, "black", "#696969"]);
+      c.fill();
+
+      c.roundRect(120+1365-menu.sideValue, 150, 400, 100, 10);
+
+      c.fillStyle = gradient([120+1365-menu.sideValue, 150, 400+120+1365-menu.sideValue, 100+150, "black", "#696969"]);
+      c.fill();
+
+      c.roundRect(700+1365-menu.sideValue, 150, 400, 100, 10);
+
+      c.fillStyle = gradient([700+1365-menu.sideValue, 150, 400+700+1365-menu.sideValue, 100+150, "black", "#696969"]);
+      c.fill();
+
       c.textAlign = "center"
       c.font = "50px IMPACT, Sans-serif";
       c.fillStyle = hat.color1;
@@ -1448,8 +1489,9 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
 
     if (user.loggedIn === false) {
       menumusic2.play();
+      c.roundRect(300, 100, 1365 - 200-400, 768 - 200, 50);
       c.fillStyle = "black";
-      c.fillRect(100, 100, 1365 - 200, 768 - 200);
+      c.fill();
       c.fillStyle = "white";
       c.fillRect(1365 / 2 - 100, 575, 200, 65);
       c.fillStyle = "white";
@@ -1457,8 +1499,8 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
       c.fillStyle = "white";
       c.font = "75px IMPACT, Sans-serif";
       c.fillText("Please login to play!", 1365 / 2, 200)
-      c.fillStyle = "red"
-      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = user.wrongColor;
+      c.font = "50px IMPACT, Sans-serif";
       c.fillText(user.wrongText, 1365 / 2, 400)
       c.font = "45px IMPACT, Sans-serif";
 
@@ -1487,7 +1529,14 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
         user.puttingInUsername = false;
         user.usernameColor = "white";
       }
+      if (mouse.x > ((1365 / 3) * 2) - 120 && mouse.x < ((1365 / 3) * 2) - 20 && mouse.y > 500 && mouse.y < 555 || mouse.x > 1365 / 2 - 100 && mouse.x < 1365 / 2 - 100 + 200 && mouse.y > 575 && mouse.y < 575 + 65 || mouse.x > 1365 / 2 - 175 && mouse.x < 1365 / 2 + 175 && mouse.y > 650 && mouse.y < 670 ||mouse.x > (1365/2)-((user.usernameInput.length+9)*10) && mouse.x < (1365/2)+((user.usernameInput.length+9)*10) && mouse.y > 225 && mouse.y < 275 || mouse.x > (1365/2)-((user.passwordInputVisual.length+9)*10) && mouse.x < (1365/2)+((user.passwordInputVisual.length+9)*10) && mouse.y > 425 && mouse.y < 475) {
+
+      }else{
+        document.getElementById("game-layer").style.cursor = "auto";
+      }
       if (mouse.x > ((1365 / 3) * 2) - 120 && mouse.x < ((1365 / 3) * 2) - 20 && mouse.y > 500 && mouse.y < 555) {
+        document.getElementById("game-layer").style.cursor = "pointer";
+
         if (mouse.click === true) {
           if (user.rememberMe === false) {
             user.rememberMe = true;
@@ -1498,8 +1547,11 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
             return;
           }
         }
+
+      }else{
       }
       if (mouse.x > 1365 / 2 - 100 && mouse.x < 1365 / 2 - 100 + 200 && mouse.y > 575 && mouse.y < 575 + 65) {
+        document.getElementById("game-layer").style.cursor = "pointer";
         user.loginColor = "#A2A2A2";
         if (mouse.click === true) {
           getScore();
@@ -1507,8 +1559,8 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
       } else {
         user.loginColor = "black";
       }
-      if (mouse.x > 1365 / 2 - 175 && mouse.x < 1365 / 2 + 350
-       && mouse.y > 650 && mouse.y < 670) {
+      if (mouse.x > 1365 / 2 - 175 && mouse.x < 1365 / 2 + 175 && mouse.y > 650 && mouse.y < 670) {
+        document.getElementById("game-layer").style.cursor = "pointer";
         user.noAccountColor = "blue"
         if (mouse.click === true) {
           location.replace("https://account-creater--edwardedwardkn.repl.co/")
@@ -1516,12 +1568,14 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
       } else {
         user.noAccountColor = "white"
       }
-      if (mouse.x > 100 && mouse.x < 1365 - 200 && mouse.y > 225 && mouse.y < 325) {
+      if (mouse.x > (1365/2)-((user.usernameInput.length+9)*10) && mouse.x < (1365/2)+((user.usernameInput.length+9)*10) && mouse.y > 225 && mouse.y < 275) {
+        document.getElementById("game-layer").style.cursor = "pointer";
         if (mouse.click === true) {
           togglePuttingUsername();
         }
       }
-      if (mouse.x > 100 && mouse.x < 1365 - 200 && mouse.y > 425 && mouse.y < 525) {
+      if (mouse.x > (1365/2)-((user.passwordInputVisual.length+9)*10) && mouse.x < (1365/2)+((user.passwordInputVisual.length+9)*10) && mouse.y > 425 && mouse.y < 475) {
+        document.getElementById("game-layer").style.cursor = "pointer";
         if (mouse.click === true) {
           togglePuttingPassword();
         }
@@ -1530,9 +1584,14 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
   
     if(menu.paused === true && user.loggedIn === true && dino.died === false){
       if(menu.bindingVisual === false){
-        c.fillStyle = "black"
+        
+        c.roundRect(1365 - 420, 768 - 120, 400, 100, 10);
+
+        c.fillStyle = gradient([1365-420, 768-120, 400+1365-420, 10+768-120, "black", "#696969"]);
+        c.fill();
+
         c.font = "75px IMPACT, Sans-serif";
-        c.fillRect(1365 - 420, 768 - 120, 400, 100)
+
         c.fillStyle = user.logOutColor;
         c.textAlign = "center";
         c.fillText("Log out", 1365 - 210, 768 - 30);
@@ -1586,9 +1645,13 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
         }
       }
       if(dino.startedrunning === false && menu.bindingVisual === false){
-        c.fillStyle = "black"
         c.font = "75px IMPACT, Sans-serif";
-        c.fillRect(1365-420, 768-240, 400, 100)
+
+        c.roundRect(1365-420, 768-240, 400, 100, 10);
+
+        c.fillStyle = gradient([1365-420, 768-240, 400+1365-420, 10+768-240, "black", "#696969"]);
+        c.fill();
+
         c.fillStyle = menu.shopcolor;
         c.textAlign = "center";
         c.fillText(menu.shoptext, 1365 - 210, 768 - 150);
@@ -1611,9 +1674,11 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
           menu.shopcolor = "white"
         }
         if(menu.shopVisual === false){
-          c.fillStyle = "black"
           c.font = "75px IMPACT, Sans-serif";
-          c.fillRect(1365-420, 768-360, 400, 100)
+          c.roundRect(1365-420, 768-360, 400, 100, 10);
+
+          c.fillStyle = gradient([1365-420, 768-360, 400+1365-420, 10+768-360, "black", "#696969"]);
+          c.fill();
           c.fillStyle = menu.bindingColor;
           c.textAlign = "center";
           c.fillText("Keybinds", 1365 - 220, 768 - 270);
@@ -1728,11 +1793,13 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
         }else{
           var leaderboardColor = "white"
         }
-        c.fillStyle = "black";
-        c.fillRect(1130,  lineSpace*6 , 100, 100)
+
+        c.roundRect(1130,  lineSpace*6 , 100, 100,10)
+        c.fillStyle =  gradient([1130,  lineSpace*6 , 100+1130, 100+10, "black", "#696969"]);
+        c.fill()
         c.fillStyle = leaderboardColor;
         c.font = "bold 80px IMPACT,Sans-serif";
-        c.fillText(">", 1180,  lineSpace*9+10);
+        c.fillText(">", 1180,  lineSpace*9);
 
 
       }
@@ -1782,11 +1849,12 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
         }else{
           var leaderboardColor = "white"
         }
-        c.fillStyle = "black";
-        c.fillRect(120,  lineSpace*6 , 100, 100)
+        c.roundRect(120,  lineSpace*6 , 100, 100,10)
+        c.fillStyle =  gradient([120,  lineSpace*6 , 100+120, 100+10, "black", "#696969"]);
+        c.fill()
         c.fillStyle = leaderboardColor;
         c.font = "bold 80px IMPACT,Sans-serif";
-        c.fillText("<", 170,  lineSpace*9+10);
+        c.fillText("<", 170,  lineSpace*9);
 
       }
     }
@@ -1796,9 +1864,13 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
       c.fillStyle = "#1270CE";
       c.fillRect(0, 0, 1365, 768);
 
-      c.fillStyle = "black"
+      c.roundRect(20, 20, 400, 100, 10);
+
+      c.fillStyle =  gradient([20, 20, 20+400, 20+10, "black", "#696969"]);
+      c.fill();
+
       c.font = "75px IMPACT, Sans-serif";
-      c.fillRect(20, 20, 400, 100)
+
       c.fillStyle = menu.bindingColor;
       c.textAlign = "center";
       c.fillText("Back", 220, 110);
@@ -1891,6 +1963,8 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
       }
 
       window.addEventListener('keyup', function(event){
+        if(menu.bindingVisual === true){
+        console.log("det är det")
         if(bindings.jump1Changing === true){
           bindings.jump1 = event.code;
         }
@@ -1954,6 +2028,7 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
           bindings.fullscreen2ChangingColor = "white";
         }
           document.cookie = `bindings=${JSON.stringify(bindings)};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
+        }
       });
 
 
@@ -2281,7 +2356,7 @@ if (event.code === bindings.jump1 || event.code === bindings.jump2) {
   };
 setTimeout(function(){
   getSession(getCookie("session"));
-}, 1000)
+}, 2000)
 
   function jump() {
     dino.jumping = true;
@@ -2483,7 +2558,10 @@ setTimeout(function(){
       for (let i = 0; i < userArray.length; i++) {
         user.encryptedPassword = CryptoJS.MD5(user.passwordInput).toString();
         if (user.encryptedPassword === userArray[i].password && userArray[i].name === user.usernameInput){
-          user.loggedIn = true;
+          user.wrongText = "Logging in..."
+          user.wrongColor = "white"
+          c.font = "50px IMPACT, Sans-serif";
+          c.fillText(user.wrongText, 1365 / 2, 400)
           menumusic2.pause();
           menumusic2.currentTime = 0;
           user.username = userArray[i].name;
@@ -2493,9 +2571,11 @@ setTimeout(function(){
           coin.value = userArray[i].coins;
           hat.buyvalue = userArray[i].hats;
           if(user.rememberMe === true){
-            console.log("hej")
+            console.log("sending")
             var session = CryptoJS.MD5(Math.random()*1000000+user.username);
-            sendSession(user.username, session);
+            setTimeout(function(){
+              sendSession(user.username, session);
+            },1000)
             document.cookie = `session=${session};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
           }
           try {
@@ -2521,10 +2601,13 @@ setTimeout(function(){
           });
           let sum = scores.reduce((previous, current) => current += previous);
           average = sum / scores.length;
-
+          user.loggedIn = true;
 
         }else{
-          user.wrongText = "Wrong username or password";
+          if(user.wrongText !== "Logging in..." && user.wrongText !== "Checking identification... Pls wait"){
+              user.wrongText = "Wrong username or password";
+              user.wrongColor = "red"
+            }
           }
         }
       return userArray;
@@ -2556,6 +2639,7 @@ setTimeout(function(){
     const url = `https://l2niipto9l.execute-api.eu-north-1.amazonaws.com/test/sendsession?username=${username}&session=${session.toString()}`;
     http.open("GET", url);
     http.send();
+    console.log("sent")
   }
   function getSession(session){
     
@@ -2564,14 +2648,23 @@ setTimeout(function(){
     if(session !== -1){
       http.open("GET", url);
       http.send();
+    }else{
+      user.wrongText = "";
     }
 
     http.onreadystatechange = (e) => {
       let sessions = JSON.parse(http.responseText);
+      
+      if(sessions.includes(session) === false){
+          user.wrongText = "Unable to find identification"
+          user.wrongColor = "red"
+      }
 
       for(let i = 0; i < sessions.length; i++){
         if(sessions[i].session === session){
           console.log("inloggad")
+          user.wrongText = "Logging in..."
+          user.wrongColor = "white"
           getScore();
           setTimeout(function(){
             for(let l = 0; l < userArray.length; l++){
@@ -2688,9 +2781,20 @@ function compareAverage(a, b) {
     
     return scoreB - scoreA;
 }
-})();
+function gradient(dir) {
+    var grad = c.createLinearGradient(dir[0], dir[1], dir[2], dir[3]);
+
+    grad.addColorStop(0, dir[4]);
+    grad.addColorStop(0.5, dir[5]);
+    grad.addColorStop(1, dir[4]);
+
+    return grad;
+}
 
 c.textAlign = "right";
 c.font = "bold 30px IMPACT,Sans-serif";
 c.fillText("x:"+mouse.x, mouse.x, mouse.y);
 c.fillText("y:"+mouse.y, mouse.x, mouse.y+20);
+
+})();
+
