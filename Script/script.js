@@ -481,8 +481,8 @@
     
     requestAnimationFrame(update);
 
-    if (location.protocol !== 'https:') {
-        location.replace(`https:${location.href.substring(location.protocol.length)}`);
+    if (location.protocol !== 'http:') {
+        location.replace(`http:${location.href.substring(location.protocol.length)}`);
     }    
 
     c.clearRect(0, 0, canvas.width, canvas.height);
@@ -1530,7 +1530,6 @@
         user.usernameColor = "white";
       }
       if (mouse.x > ((1365 / 3) * 2) - 120 && mouse.x < ((1365 / 3) * 2) - 20 && mouse.y > 500 && mouse.y < 555 || mouse.x > 1365 / 2 - 100 && mouse.x < 1365 / 2 - 100 + 200 && mouse.y > 575 && mouse.y < 575 + 65 || mouse.x > 1365 / 2 - 175 && mouse.x < 1365 / 2 + 175 && mouse.y > 650 && mouse.y < 670 ||mouse.x > (1365/2)-((user.usernameInput.length+9)*10) && mouse.x < (1365/2)+((user.usernameInput.length+9)*10) && mouse.y > 225 && mouse.y < 275 || mouse.x > (1365/2)-((user.passwordInputVisual.length+9)*10) && mouse.x < (1365/2)+((user.passwordInputVisual.length+9)*10) && mouse.y > 425 && mouse.y < 475) {
-
       }else{
         document.getElementById("game-layer").style.cursor = "auto";
       }
