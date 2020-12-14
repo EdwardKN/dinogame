@@ -9,7 +9,12 @@
 
 
 
-  var dinoImg = new Image();
+  var dinoImg1 = new Image();
+  var dinoImg2 = new Image();
+  var dinoImg3 = new Image();
+  var dinoImg4 = new Image();
+  var dinoImg5 = new Image();
+  var dinoImg6 = new Image();
 
   var hatImg = new Image();
   var hatsImg = new Image();
@@ -31,7 +36,8 @@
 
   var cactus4Img = new Image();
 
-  var bird1Img = new Image();
+  var bird1Img1 = new Image();
+  var bird1Img2 = new Image();
 
   var coinImg = new Image();
 
@@ -54,9 +60,16 @@
   var beep1 = new Audio('/Sounds/beep1.mp3');
   var beep2 = new Audio('/Sounds/beep2.mp3');
 
-  var muted = false;
+  var muted = getCookie("mute") === -1 ? false : getCookie("mute");
 
-
+  setTimeout(function(){
+    if(muted === true || muted === "true"){
+      mute()
+      setTimeout(function(){
+        mute()
+        },100)
+    }
+    },200)
 
 
   var standardHeight = 460;
@@ -68,7 +81,7 @@
   var leaderboardShow = false;
   var leaderboardSide = 1;
 
-  var version = "V0.1.6 Experimental";
+  var version = "V0.1.7 Experimental";
 
   var oldVersion = false;
 
@@ -83,7 +96,19 @@
 
   var tmpY;
 
+  var loading = true;
 
+  var loadbar = 0;
+
+  var fps = 60;
+
+  var loadingbar = setInterval(function(){
+    loadbar += 1
+    if(loadbar === 70){
+        clearInterval(loadingbar);
+        loading = false;
+    }
+  },25)
 
   var user = {
     highscore: 0,
@@ -146,8 +171,7 @@
   setInterval(teleport, 1000)
 
 
-
-
+  var loosehat = false;
 
   var cactus1 = {
     x: -1000,
@@ -205,9 +229,7 @@
     sideColor2: "white",
     side2: false,
     color6: "white",
-    text6: "Buy for 1500 Gold",
-    color7: "white",
-    text7: "Buy for 2500 Gold",
+    text6: "Buy for 1000 Gold",
     equipedLife: Number(getCookie("equipedLife") === -1 ? 0 : getCookie("equipedLife")),
     bindingVisual: false,
     bindingColor: "white",
@@ -270,8 +292,10 @@
     text5: "Buy for 500 Gold",
     equipedHat:Number(getCookie("equipedHat") === -1 ? 0 : getCookie("equipedHat")),
     hatboost: 0,
-    fly: false
+    fly: false,
+    dropped: false
   };
+  
 
   if(user.loggedIn === "true" || user.loggedIn === true) {
     getScore();
@@ -280,6 +304,7 @@
     dino.inAir = false;
     dino.died = false;
     user.loggedIn = true;
+    document.getElementById("game-layer").style.cursor = "auto";
     }, 2000)
   }
   if(menu.equipedLife === 1){
@@ -314,18 +339,8 @@
 
 
 
-  CanvasRenderingContext2D.prototype.roundRect = function (x, y, width, height, radius) {
-  if (width < 2 * radius) radius = width / 2;
-  if (height < 2 * radius) radius = height / 2;
-  this.beginPath();
-  this.moveTo(x + radius, y);
-  this.arcTo(x + width, y, x + width, y + height, radius);
-  this.arcTo(x + width, y + height, x, y + height, radius);
-  this.arcTo(x, y + height, x, y, radius);
-  this.arcTo(x, y, x + width, y, radius);
-  this.closePath();
-  return this;
-}
+
+
 
 
 
@@ -357,7 +372,6 @@
   });
 
   window.addEventListener('keydown', function (event) {
-    console.log(event)
     if(event.code === bindings.mute1 || event.code === bindings.mute2){
       if(menu.bindingVisual === false && user.puttingInPassword === false && user.puttingInUsername === false){
         mute();
@@ -476,17 +490,173 @@
   });
 
 
+function preload(){
+    
+    setTimeout(function(){
+      if (dinoImg1.complete) {
+        c.drawImage(dinoImg1, Math.floor(dino.x), Math.floor(dino.y));
+        if(hat.fly === false && hat.dropped === false){
+          c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue2, Math.floor(dino.y-hat.crouchValue), 150, 100);
+          tmpY = Math.floor(dino.y-hat.crouchValue);
+          tmpX = Math.floor(dino.x+70)+hat.crouchValue2;
+        }else if(hat.dropped === false && dino.died === false){
+          tmpX -= dino.speed; 
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+        }else{
+          tmpY = 570;
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+          tmpX -= dino.speed; 
+        }
+
+        dinoImg1.src = 'Images/Dinosaur/dino1.png';
+      }
+      },200)
+
+    setTimeout(function(){
+      if (dinoImg2.complete) {
+        c.drawImage(dinoImg2, Math.floor(dino.x), Math.floor(dino.y));
+        if(hat.fly === false && hat.dropped === false){
+          c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue2, Math.floor(dino.y-hat.crouchValue), 150, 100);
+          tmpY = Math.floor(dino.y-hat.crouchValue);
+          tmpX = Math.floor(dino.x+70)+hat.crouchValue2;
+        }else if(hat.dropped === false && dino.died === false){
+          tmpX -= dino.speed; 
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+        }else{
+          tmpY = 570;
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+          tmpX -= dino.speed; 
+        }
+
+        dinoImg2.src = 'Images/Dinosaur/dino2.png';
+      }
+      },400)
+
+    setTimeout(function(){
+      if (dinoImg3.complete) {
+        c.drawImage(dinoImg3, Math.floor(dino.x), Math.floor(dino.y));
+        if(hat.fly === false && hat.dropped === false){
+          c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue3, Math.floor(dino.y-hat.crouchValue), 150, 100);
+          tmpY = Math.floor(dino.y-hat.crouchValue);
+          tmpX = Math.floor(dino.x+70)+hat.crouchValue3;
+        }else if(hat.dropped === false && dino.died === false){
+          tmpX -= dino.speed; 
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+        }else{
+          tmpY = 570;
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+          tmpX -= dino.speed; 
+        }
+
+        dinoImg3.src = 'Images/Dinosaur/dino3.png';
+      }
+      },600)
+
+    setTimeout(function(){
+      if (dinoImg4.complete) {
+        c.drawImage(dinoImg4, Math.floor(dino.x), Math.floor(dino.y));
+        if(hat.fly === false && hat.dropped === false){
+          c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue3, Math.floor(dino.y-hat.crouchValue), 150, 100);
+          tmpY = Math.floor(dino.y-hat.crouchValue);
+          tmpX = Math.floor(dino.x+70)+hat.crouchValue3;
+        }else if(hat.dropped === false && dino.died === false){
+          tmpX -= dino.speed; 
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+        }else{
+          tmpY = 570;
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+          tmpX -= dino.speed; 
+        }
+
+        dinoImg4.src = 'Images/Dinosaur/dino4.png';
+      }
+      },800)
+
+    setTimeout(function(){
+      if (dinoImg5.complete) {
+
+            c.drawImage(dinoImg5, Math.floor(dino.x), Math.floor(dino.y));
+            if(hat.fly === false && hat.dropped === false){
+              c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue3, Math.floor(dino.y-hat.crouchValue), 150, 100);
+              tmpY = Math.floor(dino.y-hat.crouchValue);
+              tmpX = Math.floor(dino.x+70)+hat.crouchValue3;
+              }else if(hat.dropped === false && dino.died === false){
+                tmpX -= dino.speed; 
+                c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+              }else{
+                tmpY = 570;
+                c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+                tmpX -= dino.speed; 
+              }
+
+            dinoImg5.src = 'Images/Dinosaur/dino5.png';
+          }
+      },1000)
+    
+    setTimeout(function(){
+
+    if (dinoImg6.complete) {
+
+      c.drawImage(dinoImg6, Math.floor(dino.x), Math.floor(dino.y));
+      if(hat.fly === false && hat.dropped === false){
+        c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue3, Math.floor(dino.y-hat.crouchValue), 150, 100);
+        tmpY = Math.floor(dino.y-hat.crouchValue);
+        tmpX = Math.floor(dino.x+70)+hat.crouchValue3;
+        }else if(hat.dropped === false && dino.died === false){
+          tmpX -= dino.speed; 
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+        }else{
+          tmpY = 570;
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+          tmpX -= dino.speed; 
+        }
+
+      dinoImg6.src = 'Images/Dinosaur/dino6.png';
+    }
+    },1200)
+    setTimeout(function(){
+          if (bird1Img1.complete) {
+      c.drawImage(bird1Img1, Math.floor(bird1.x), Math.floor(bird1.y));
+      bird1Img1.src = 'Images/Bird/bird1.png';
+    }
+    }
+
+      ,1400)
+
+    setTimeout(function(){
+      
+    if (bird1Img2.complete) {
+      c.drawImage(bird1Img2, Math.floor(bird1.x), Math.floor(bird1.y));
+      bird1Img2.src = 'Images/Bird/bird2.png';
+    }
+      },1600)
+
+  }
+
+    preload();
+  var realFPS = 0;
+  setInterval(function(){
+    realFPS = 0;
+  }, 1000)
 
   function update() {
     
-    requestAnimationFrame(update);
 
-    if (location.protocol !== 'http:') {
-        location.replace(`http:${location.href.substring(location.protocol.length)}`);
-    }    
+    realFPS++;
 
     c.clearRect(0, 0, canvas.width, canvas.height);
-    
+        if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+      c.fillStyle = "white";
+      c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
+
+
+    }
     if(scores.length > 1){
       scores = scores.filter(function(val) {
           return val !== 0;
@@ -509,121 +679,240 @@
       }
     }
 
-    if (dino.animationState === 1) {
-      dino.image = 'Images/Dinosaur/dino1.png';
-    }
-    if (dino.animationState === 2) {
-      dino.image = 'Images/Dinosaur/dino2.png';
-    }
-    if (dino.animationState === 3) {
-      dino.image = 'Images/Dinosaur/dino3.png';
-    }
-    if (dino.animationState === 4) {
-      dino.image = 'Images/Dinosaur/dino4.png';
-    }
-    if (dino.animationState === 5) {
-      dino.image = 'Images/Dinosaur/dino5.png';
-    }
-    if (dino.animationState === 5) {
-      dino.image = 'Images/Dinosaur/dino5.png';
-    }
-    if (dino.animationState === 6) {
-      dino.image = 'Images/Dinosaur/dino6.png';
-    }
 
-    if (bird1.animationState === 1) {
-      bird1.image = 'Images/Bird/bird1.png';
-    }
-    if (bird1.animationState === 2) {
-      bird1.image = 'Images/Bird/bird2.png';
-    }
+
+
     if(coin.animationState === 1){
       coin.image = 'Images/Coins/coin1.png'
     }
 
 
 
+    if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+            c.fillStyle = "white";
+            c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
 
+    }
     if (back1Img.complete) {
       c.drawImage(back1Img, Math.floor(back1.x), back1.y, 1365, 768);
       back1Img.src = 'Images/Background/back1.png';
-    } else {
-      back1Img.addEventListener('load', loaded)
-      back1Img.addEventListener('error', function () {
-      })
     }
     if (back2Img.complete) {
       c.drawImage(back2Img, Math.floor(back2.x), back2.y, 1365, 768);
       back2Img.src = 'Images/Background/back2.png';
-    } else {
-      back2Img.addEventListener('load', loaded)
-      back2Img.addEventListener('error', function () {
-      })
+    }
+    if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+            c.fillStyle = "white";
+            c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
+
     }
 
-
-    if (dinoImg.complete) {
-      c.drawImage(dinoImg, Math.floor(dino.x), Math.floor(dino.y));
-      if(hat.fly === false){
+    if (dinoImg1.complete && dino.animationState === 1) {
+      c.drawImage(dinoImg1, Math.floor(dino.x), Math.floor(dino.y));
+      if(hat.fly === false && hat.dropped === false){
         c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue2, Math.floor(dino.y-hat.crouchValue), 150, 100);
         tmpY = Math.floor(dino.y-hat.crouchValue);
         tmpX = Math.floor(dino.x+70)+hat.crouchValue2;
-      }else{
-        tmpX -= dino.speed;
-        c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
-      }
+        }else if(hat.dropped === false && dino.died === false){
+          tmpX -= dino.speed; 
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+        }else if(dino.died === false){
+          tmpY = 570;
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+          tmpX -= dino.speed; 
+        }
 
-      dinoImg.src = dino.image;
-    } else {
-      dinoImg.addEventListener('load', function () {
+      dinoImg1.src = 'Images/Dinosaur/dino1.png';
+    }
+    if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+            c.fillStyle = "white";
+            c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
 
-      })
-      dinoImg.addEventListener('error', function () {
-      })
+    }
+    if (dinoImg2.complete && dino.animationState === 2) {
+      c.drawImage(dinoImg2, Math.floor(dino.x), Math.floor(dino.y));
+      if(hat.fly === false && hat.dropped === false){
+        c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue2, Math.floor(dino.y-hat.crouchValue), 150, 100);
+        tmpY = Math.floor(dino.y-hat.crouchValue);
+        tmpX = Math.floor(dino.x+70)+hat.crouchValue2;
+        }else if(hat.dropped === false && dino.died === false){
+          tmpX -= dino.speed; 
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+        }else if(dino.died === false){
+          tmpY = 570;
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+          tmpX -= dino.speed; 
+        }
+
+      dinoImg2.src = 'Images/Dinosaur/dino2.png';
     }
 
-    if (bird1Img.complete) {
-      c.drawImage(bird1Img, Math.floor(bird1.x), Math.floor(bird1.y));
-      bird1Img.src = bird1.image;
-    } else {
-      bird1Img.addEventListener('load', function () {
+    if (dinoImg3.complete && dino.animationState === 3) {
+      c.drawImage(dinoImg3, Math.floor(dino.x), Math.floor(dino.y));
+      if(hat.fly === false && hat.dropped === false){
+        c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue2, Math.floor(dino.y-hat.crouchValue), 150, 100);
+        tmpY = Math.floor(dino.y-hat.crouchValue);
+        tmpX = Math.floor(dino.x+70)+hat.crouchValue2;
+        }else if(hat.dropped === false && dino.died === false){
+          tmpX -= dino.speed; 
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+        }else if(dino.died === false){
+          tmpY = 570;
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+          tmpX -= dino.speed; 
+        }
 
-      })
-      bird1Img.addEventListener('error', function () {
-      })
+      dinoImg3.src = 'Images/Dinosaur/dino3.png';
+    }
+        if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+            c.fillStyle = "white";
+            c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
+
+    }
+    if (dinoImg4.complete && dino.animationState === 4) {
+      c.drawImage(dinoImg4, Math.floor(dino.x), Math.floor(dino.y));
+      if(hat.fly === false && hat.dropped === false){
+        c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue2, Math.floor(dino.y-hat.crouchValue), 150, 100);
+        tmpY = Math.floor(dino.y-hat.crouchValue);
+        tmpX = Math.floor(dino.x+70)+hat.crouchValue2;
+        }else if(hat.dropped === false && dino.died === false){
+          tmpX -= dino.speed; 
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+        }else if(dino.died === false){
+          tmpY = 570;
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+          tmpX -= dino.speed; 
+        }
+
+      dinoImg4.src = 'Images/Dinosaur/dino4.png';
+    }
+    if (dinoImg5.complete && dino.animationState === 5) {
+      c.drawImage(dinoImg5, Math.floor(dino.x), Math.floor(dino.y));
+      if(hat.fly === false && hat.dropped === false){
+        c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue2, Math.floor(dino.y-hat.crouchValue), 150, 100);
+        tmpY = Math.floor(dino.y-hat.crouchValue);
+        tmpX = Math.floor(dino.x+70)+hat.crouchValue2;
+        }else if(hat.dropped === false && dino.died === false){
+          tmpX -= dino.speed; 
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+        }else if(dino.died === false){
+          tmpY = 570;
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+          tmpX -= dino.speed; 
+        }
+
+      dinoImg5.src = 'Images/Dinosaur/dino5.png';
+    }
+        if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+      c.fillStyle = "white";
+      c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
+
+    }
+    if (dinoImg6.complete && dino.animationState === 6) {
+      c.drawImage(dinoImg6, Math.floor(dino.x), Math.floor(dino.y));
+      if(hat.fly === false && hat.dropped === false){
+        c.drawImage(hatImg, Math.floor(dino.x+70)+hat.crouchValue2, Math.floor(dino.y-hat.crouchValue), 150, 100);
+        tmpY = Math.floor(dino.y-hat.crouchValue);
+        tmpX = Math.floor(dino.x+70)+hat.crouchValue2;
+        }else if(hat.dropped === false && dino.died === false){
+          tmpX -= dino.speed; 
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+        }else if(dino.died === false){
+          tmpY = 570;
+          c.drawImage(hatImg, Math.floor(tmpX), Math.floor(tmpY), 150, 100);
+          tmpX -= dino.speed; 
+        }
+
+      dinoImg6.src = 'Images/Dinosaur/dino6.png';
     }
 
+    if (bird1Img1.complete && bird1.animationState === 1) {
+      c.drawImage(bird1Img1, Math.floor(bird1.x), Math.floor(bird1.y));
+      bird1Img1.src = 'Images/Bird/bird1.png';
+    }
+    if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+            c.fillStyle = "white";
+            c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
+
+    }
+    if (bird1Img2.complete && bird1.animationState === 2) {
+      c.drawImage(bird1Img2, Math.floor(bird1.x), Math.floor(bird1.y));
+      bird1Img2.src = 'Images/Bird/bird2.png';
+    }
     if (cactus1Img.complete) {
       c.drawImage(cactus1Img, Math.floor(cactus1.x), cactus1.y-20);
       cactus1Img.src = 'Images/Obstacles/cactus1.png';
-    } else {
-      cactus1Img.addEventListener('load', loaded)
-      cactus1Img.addEventListener('error', function () {
-      })
     }
+    if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+            c.fillStyle = "white";
+            c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
 
+    }
     if (cactus2Img.complete) {
       c.drawImage(cactus2Img, Math.floor(cactus2.x), cactus2.y-20);
       cactus2Img.src = 'Images/Obstacles/cactus2.png';
 
-    } else {
-      cactus2Img.addEventListener('load', loaded)
-      cactus2Img.addEventListener('error', function () {
-      })
     }
     if (cactus3Img.complete) {
       c.drawImage(cactus3Img, Math.floor(cactus3.x), cactus3.y - 20);
       cactus3Img.src = 'Images/Obstacles/cactus3.png';
-    } else {
-      cactus3Img.addEventListener('load', loaded)
     }
     if (cactus4Img.complete) {
       c.drawImage(cactus4Img, Math.floor(cactus4.x), cactus4.y - 20);
       cactus4Img.src = 'Images/Obstacles/stone1.png';
-    } else {
-      cactus4Img.addEventListener('load', loaded)
-      cactus4Img.addEventListener('error', function () {
-      })
+    }
+        if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+            c.fillStyle = "white";
+            c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
+
     }
     if (coinImg.complete) {
       c.drawImage(coinImg, Math.floor(coin.x), Math.floor(coin.y), 200, 200);
@@ -634,14 +923,18 @@
       c.textAlign = "center";
       c.font = "30px IMPACT, Sans-serif";
       c.fillText(Math.floor(coin.value*10)/10, coin.x+96, coin.y+115)
-    } else {
-      coinImg.addEventListener('load', function () {
+    } 
+    if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+            c.fillStyle = "white";
+            c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
 
-      })
-      coinImg.addEventListener('error', function () {
-      })
     }
-
 
     if (back1.x < -1365 && dino.backwards === false) {
       back1.x = 1365 - dino.speed;
@@ -817,17 +1110,23 @@
         dino.speed = Math.floor(4000 / 300 + 20);
       }
 
-  	  if(dino.crouch === true && dino.inAir === false){
+  	  if(dino.crouch === true && dino.inAir === false && hat.fly === false){
         if(hat.crouchValue > -35){
           hat.crouchValue -= 10;
         }
         hat.crouchValue2 = 15;
-      }else if(dino.inAir === true && dino.jumpheight < 0){
+      }else if(dino.inAir === true && dino.jumpheight < 0 && hat.fly === false){
         hat.crouchValue += 3;
-      }else{
-        hat.crouchValue = 65
+      }else if(hat.fly === false ){
+        if(hat.crouchValue > 65){
+          hat.crouchValue -= 15;
+        }
+        if(hat.crouchValue < 65){
+          hat.crouchValue = 65;
+        }
         hat.crouchValue2 = 0;
       }
+      
 
       dino.score += (0.1+hat.hatboost);
 
@@ -871,10 +1170,9 @@
       deathMusic.play();
       runningMusic.pause();
       runningMusic.currentTime = 0;
-      c.roundRect(1365 - 420, 768 - 120, 400, 100, 10);
+      c.fillStyle = "black"
+      c.fillRect(1365 - 420, 768 - 120, 400, 100);
 
-      c.fillStyle = gradient([1365-420, 768-120, 400+1365-420, 10+768-120, "black", "#696969"]);
-      c.fill();
       c.fillStyle = user.logOutColor;
       c.textAlign = "center";
       c.fillText("Log out", 1365 - 210, 768 - 30);
@@ -941,7 +1239,6 @@
             scores = [0]
             document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "equipedHat=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie = "equipedLife=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
           }
         } else {
           user.logOutColor = "white";
@@ -1086,26 +1383,13 @@
     }else{
       dino.hitOnce = false;
     }
+
     if (dino.x + 150 > bird1.x + 50 && dino.y > bird1.y - 100 && dino.x < bird1.x + 50 && dino.y < bird1.y + 100 && dino.crouch === true && hat.fly === false) {
       hat.fly = true;
       hat.hatboost = 0;
       setTimeout(function(){
         hat.fly = false;
-        if(hat.equipedHat = 1){
-          hat.hatboost = 0.01;
-        }
-        if(hat.equipedHat = 2){
-          hat.hatboost = 0.025;
-        }
-        if(hat.equipedHat = 3){
-          hat.hatboost = 0.0375;
-        }
-        if(hat.equipedHat = 4){
-          hat.hatboost = 0.05;
-        }
-        if(hat.equipedHat = 5){
-          hat.hatboost = 0.075;
-        }
+        hat.dropped = true;
       }, 10000)
     }
     if (dino.x + 150 > bird1.x + 50 && dino.y > bird1.y - 100 && dino.x < bird1.x + 50 && dino.y - 75 < bird1.y + 100 && dino.crouch === false && hat.fly === false) {
@@ -1115,6 +1399,13 @@
       hat.hatboost = 0;
       setTimeout(function(){
         hat.fly = false;
+        hat.dropped = true;
+
+      }, 10000)
+    }
+    console.log(dino.y + "   " + dino.inAir)
+    if(dino.x < tmpX && hat.dropped === true && tmpX > -1000 && tmpX < 200 && dino.inAir === false){
+      hat.dropped = false;
         if(hat.equipedHat = 1){
           hat.hatboost = 0.01;
         }
@@ -1130,8 +1421,10 @@
         if(hat.equipedHat = 5){
           hat.hatboost = 0.075;
         }
-      }, 10000)
+    }else if(dino.x < tmpX && hat.dropped === true && tmpX > -1000 && tmpX < 200 && dino.inAir === true){
+      loosehat = true;
     }
+    
     c.fillStyle = "black";
     c.textAlign = "center"
     c.font = "500px IMPACT, Sans-serif";
@@ -1147,68 +1440,28 @@
       if (hatsImg.complete) {
         c.drawImage(hatsImg, 0-menu.sideValue, 0);
         hatsImg.src = "/Images/Hats/Hats.png";
-      } else {
-        hatsImg.addEventListener('load', function () {
-
-        })
-        hatsImg.addEventListener('error', function () {
-        })
       }
       if (heartsImg.complete) {
         c.drawImage(heartsImg, 1365-menu.sideValue, 0);
         heartsImg.src = "/Images/Hearts/Hearts.png";
-      } else {
-        heartsImg.addEventListener('load', function () {
-
-        })
-        heartsImg.addEventListener('error', function () {
-        })
       }
+      c.fillStyle = "black"
 
-      c.roundRect(1200-menu.sideValue, 410, 100, 100, 10);
+      c.fillRect(1200-menu.sideValue, 410, 100, 100);
 
-      c.fillStyle = gradient([1200-menu.sideValue, 410, 100+1200-menu.sideValue, 100+410, "black", "#696969"]);
-      c.fill();
+      c.fillRect(150+1250-menu.sideValue, 410, 100, 100);
 
-      c.roundRect(150+1250-menu.sideValue, 410, 100, 100, 10);
+      c.fillRect(100-menu.sideValue, 658, 400, 100);
 
-      c.fillStyle = gradient([1200-menu.sideValue+150, 410, 100+1200-menu.sideValue+150, 100+410, "black", "#696969"]);
-      c.fill();
+      c.fillRect(510-menu.sideValue, 658, 400, 100);
 
-      c.roundRect(100-menu.sideValue, 658, 400, 100, 10);
+      c.fillRect(100-menu.sideValue, 290, 400, 100);
 
-      c.fillStyle = gradient([100-menu.sideValue, 658, 400+100-menu.sideValue, 100+658, "black", "#696969"]);
-      c.fill();
+      c.fillRect(510-menu.sideValue, 290, 400, 100);
 
-      c.roundRect(510-menu.sideValue, 658, 400, 100, 10);
+      c.fillRect(920-menu.sideValue, 290, 400, 100);
 
-      c.fillStyle = gradient([510-menu.sideValue, 658, 400+510-menu.sideValue, 100+658, "black", "#696969"]);
-      c.fill();
-
-      c.roundRect(100-menu.sideValue, 290, 400, 100, 10);
-
-      c.fillStyle = gradient([100-menu.sideValue, 290, 400+100-menu.sideValue, 100+290, "black", "#696969"]);
-      c.fill();
-
-      c.roundRect(510-menu.sideValue, 290, 400, 100, 10);
-
-      c.fillStyle = gradient([510-menu.sideValue, 658, 400+510-menu.sideValue, 100+658, "black", "#696969"]);
-      c.fill();
-
-      c.roundRect(920-menu.sideValue, 290, 400, 100, 10);
-
-      c.fillStyle = gradient([920-menu.sideValue, 290, 400+920-menu.sideValue, 100+290, "black", "#696969"]);
-      c.fill();
-
-      c.roundRect(120+1365-menu.sideValue, 150, 400, 100, 10);
-
-      c.fillStyle = gradient([120+1365-menu.sideValue, 150, 400+120+1365-menu.sideValue, 100+150, "black", "#696969"]);
-      c.fill();
-
-      c.roundRect(700+1365-menu.sideValue, 150, 400, 100, 10);
-
-      c.fillStyle = gradient([700+1365-menu.sideValue, 150, 400+700+1365-menu.sideValue, 100+150, "black", "#696969"]);
-      c.fill();
+      c.fillRect((1365/2)+1365-menu.sideValue-200, 150, 400, 100);
 
       c.textAlign = "center"
       c.font = "50px IMPACT, Sans-serif";
@@ -1223,9 +1476,7 @@
       c.fillStyle = hat.color5;
       c.fillText(hat.text5, 710-menu.sideValue, 740)
       c.fillStyle = menu.color6;
-      c.fillText(menu.text6, 320+1365-menu.sideValue, 230)
-      c.fillStyle = menu.color7;
-      c.fillText(menu.text7, 900+1365-menu.sideValue, 230)
+      c.fillText(menu.text6, (1365/2)+1365-menu.sideValue, 230)
       c.fillStyle = menu.sideColor;
       c.fillText(">", 1250-menu.sideValue, 490)
       c.fillStyle = menu.sideColor2;
@@ -1234,7 +1485,7 @@
       c.fillText("Hats(scoreboosters)", 1365/2-menu.sideValue, 75)
       c.fillText("Extra lives", 1365+1365/2-menu.sideValue, 75)
       var hatArray = hat.buyvalue.split(",");
-      if(mouse.x > 1200-menu.sideValue && mouse.y > 410 && mouse.x < 1200+100-menu.sideValue && mouse.y < 410+100 && menu.sideValue === 0){
+      if(mouse.x > 1200-menu.sideValue && mouse.y > 410 && mouse.x < 1200+100-menu.sideValue && mouse.y < 410+100 && menu.sideValue === 0 && user.username === "admin"){
         menu.sideColor = "#A2A2A2"
         if(mouse.click === true){
           menu.side2 = true;
@@ -1293,26 +1544,20 @@
         hat.text5 = "Buy for 500 Gold";
       }
       if(hatArray[5] === "1" && menu.equipedLife !== 1){
-        menu.text6 = "Equip";
+
       }else if(menu.equipedLife === 1){
-        menu.text6 = "Unequip";
+
       }else{
         menu.text6 = "Buy for 1500 Gold";
-      }
-      if(hatArray[6] === "1" && menu.equipedLife !== 2){
-        menu.text7 = "Equip";
-      }else if(menu.equipedLife === 2){
-        menu.text7 = "Unequip";
-      }else{
-        menu.text7 = "Buy for 2500 Gold";
       }
       if(mouse.x > 120+1365-menu.sideValue && mouse.x < 520+1365-menu.sideValue && mouse.y > 150 && mouse.y < 250){
         menu.color6 = "#A2A2A2";
         if(mouse.click === true){
           if(coin.value >= 1500 && hatArray[5] === "0"){
-            hatArray[5] = "1";
+
+            coin.value = coin.value-1000*(hatArray[5]+1);
+            hatArray[5] = (hatArray.toString()[5])+1;
             hat.buyvalue = hatArray.toString()
-            coin.value = coin.value-1500;
             sendScore(user.username, Math.floor(user.highscore), user.password, user.mail, Math.floor(coin.value), hat.buyvalue, scores);
             return
           }
@@ -1321,43 +1566,14 @@
             heartImg.src = "/Images/Hearts/Heart.png"
             menu.equipedLife = 1;
             dino.lives = 1;
-            document.cookie = `equipedLife=${menu.equipedLife};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
           }else{
             heartImg.src = ""
             menu.equipedLife = 0;
-            document.cookie = "equipedLife=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             dino.lives = 0;
           }
         }
       }else{
         menu.color6 = "white";
-      }
-      if(mouse.x > 700+1365-menu.sideValue && mouse.x < 1100+1365-menu.sideValue && mouse.y > 150 && mouse.y < 250){
-        menu.color7 = "#A2A2A2";
-        if(mouse.click === true){
-          if(coin.value >= 2500 && hatArray[6] === "0"){
-            hatArray[6] = "1";
-            hat.buyvalue = hatArray.toString()
-            coin.value = coin.value-2500;
-            sendScore(user.username, Math.floor(user.highscore), user.password, user.mail, Math.floor(coin.value), hat.buyvalue, scores);
-            return
-          }
-          if(hatArray[6] === "1" && menu.equipedLife !== 2){
-            heartImg.src = "/Images/Hearts/Heart.png"
-            heart2Img.src = "/Images/Hearts/Heart.png"
-            menu.equipedLife = 2;
-            dino.lives = 2;
-            document.cookie = `equipedLife=${menu.equipedLife};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
-          }else{
-            heartImg.src = ""
-            heart2Img.src = ""
-            menu.equipedLife = 0;
-            document.cookie = "equipedLife=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            dino.lives = 0
-          }
-        }
-      }else{
-        menu.color7 = "white";
       }
       if(mouse.x > 100-menu.sideValue && mouse.x < 500-menu.sideValue && mouse.y > 290 && mouse.y < 390){
         hat.color1 = "#A2A2A2";
@@ -1485,11 +1701,22 @@
         hat.color5 = "white"
       }
     }
-    
+        if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+            c.fillStyle = "white";
+            c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
 
-    if (user.loggedIn === false) {
-      menumusic2.play();
-      c.roundRect(300, 100, 1365 - 200-400, 768 - 200, 50);
+    }
+
+    if (user.loggedIn === false && loading === false) {
+        menumusic2.play();
+
+      c.fillRect(300, 100, 1365 - 200-400, 768 - 200);
       c.fillStyle = "black";
       c.fill();
       c.fillStyle = "white";
@@ -1523,6 +1750,7 @@
       c.font = "25px IMPACT, Sans-serif";
       c.fillText("Click here to register an account", 1365 / 2, 670)
       c.textDecoration = "none";
+
       if (mouse.click === true) {
         user.puttingInPassword = false;
         user.passwordColor = "white";
@@ -1534,7 +1762,7 @@
         document.getElementById("game-layer").style.cursor = "auto";
       }
       if (mouse.x > ((1365 / 3) * 2) - 120 && mouse.x < ((1365 / 3) * 2) - 20 && mouse.y > 500 && mouse.y < 555) {
-        document.getElementById("game-layer").style.cursor = "pointer";
+          document.getElementById("game-layer").style.cursor = "pointer";
 
         if (mouse.click === true) {
           if (user.rememberMe === false) {
@@ -1550,8 +1778,8 @@
       }else{
       }
       if (mouse.x > 1365 / 2 - 100 && mouse.x < 1365 / 2 - 100 + 200 && mouse.y > 575 && mouse.y < 575 + 65) {
-        document.getElementById("game-layer").style.cursor = "pointer";
         user.loginColor = "#A2A2A2";
+          document.getElementById("game-layer").style.cursor = "pointer";
         if (mouse.click === true) {
           getScore();
         }
@@ -1559,8 +1787,8 @@
         user.loginColor = "black";
       }
       if (mouse.x > 1365 / 2 - 175 && mouse.x < 1365 / 2 + 175 && mouse.y > 650 && mouse.y < 670) {
-        document.getElementById("game-layer").style.cursor = "pointer";
         user.noAccountColor = "blue"
+          document.getElementById("game-layer").style.cursor = "pointer";
         if (mouse.click === true) {
           location.replace("https://account-creater--edwardedwardkn.repl.co/")
         }
@@ -1568,26 +1796,37 @@
         user.noAccountColor = "white"
       }
       if (mouse.x > (1365/2)-((user.usernameInput.length+9)*10) && mouse.x < (1365/2)+((user.usernameInput.length+9)*10) && mouse.y > 225 && mouse.y < 275) {
-        document.getElementById("game-layer").style.cursor = "pointer";
+          document.getElementById("game-layer").style.cursor = "pointer";
         if (mouse.click === true) {
           togglePuttingUsername();
-        }
+        }else{
+      }
       }
       if (mouse.x > (1365/2)-((user.passwordInputVisual.length+9)*10) && mouse.x < (1365/2)+((user.passwordInputVisual.length+9)*10) && mouse.y > 425 && mouse.y < 475) {
-        document.getElementById("game-layer").style.cursor = "pointer";
+          document.getElementById("game-layer").style.cursor = "pointer";
         if (mouse.click === true) {
           togglePuttingPassword();
         }
+      }else{
       }
     }
-  
+    if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+            c.fillStyle = "white";
+            c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
+
+    }
     if(menu.paused === true && user.loggedIn === true && dino.died === false){
       if(menu.bindingVisual === false){
         
-        c.roundRect(1365 - 420, 768 - 120, 400, 100, 10);
+        c.fillStyle = "black";
+        c.fillRect(1365-420, 650, 400, 100)
 
-        c.fillStyle = gradient([1365-420, 768-120, 400+1365-420, 10+768-120, "black", "#696969"]);
-        c.fill();
 
         c.font = "75px IMPACT, Sans-serif";
 
@@ -1646,10 +1885,9 @@
       if(dino.startedrunning === false && menu.bindingVisual === false){
         c.font = "75px IMPACT, Sans-serif";
 
-        c.roundRect(1365-420, 768-240, 400, 100, 10);
+        c.fillStyle = "black"
+        c.fillRect(1365-420, 768-240, 400, 100);
 
-        c.fillStyle = gradient([1365-420, 768-240, 400+1365-420, 10+768-240, "black", "#696969"]);
-        c.fill();
 
         c.fillStyle = menu.shopcolor;
         c.textAlign = "center";
@@ -1674,7 +1912,8 @@
         }
         if(menu.shopVisual === false){
           c.font = "75px IMPACT, Sans-serif";
-          c.roundRect(1365-420, 768-360, 400, 100, 10);
+          c.fillStyle = "black"
+          c.fillRect(1365-420, 768-360, 400, 100);
 
           c.fillStyle = gradient([1365-420, 768-360, 400+1365-420, 10+768-360, "black", "#696969"]);
           c.fill();
@@ -1684,9 +1923,9 @@
           if(mouse.x > 1365 - 420 && mouse.x < 1365 - 20 && mouse.y > 768-360 && mouse.y < 768 - 260){
             menu.bindingColor = "#A2A2A2";
             if(mouse.click === true){
-            setTimeout(function(){
-              menu.bindingVisual = true;
-            },50)
+              setTimeout(function(){
+                menu.bindingVisual = true;
+              }, 50)
             }
           }else{
             menu.bindingColor = "white"
@@ -1733,12 +1972,22 @@
             scores = 0;
             document.cookie = "session=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
             document.cookie = "equipedHat=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            document.cookie = "equipedLife=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
           }
         } else {
           user.logOutColor = "white";
         }
       }
+    }
+        if(loading === true){
+      c.fillStyle = "black";
+       c.clearRect(0, 0, canvas.width, canvas.height);
+      c.font = "75px IMPACT, Sans-serif";
+      c.fillStyle = "white";
+      c.textAlign = "center";
+      c.fillText("loading...", 1365/2, 768/2)
+            c.fillStyle = "white";
+            c.fillRect((1365/20),(768/3)*2,(1365/80)*loadbar,50)
+
     }
     if (leaderboardShow === true) {
       for (var i = 0; i < userArray.length; i++) {
@@ -1792,8 +2041,8 @@
         }else{
           var leaderboardColor = "white"
         }
-
-        c.roundRect(1130,  lineSpace*6 , 100, 100,10)
+        c.fillStyle = "black"
+        c.fillStyle(1130,  lineSpace*6 , 100, 100)
         c.fillStyle =  gradient([1130,  lineSpace*6 , 100+1130, 100+10, "black", "#696969"]);
         c.fill()
         c.fillStyle = leaderboardColor;
@@ -1822,7 +2071,7 @@
         userArray.sort(function(a, b){
             return b.average-a.average
         })
-
+        c.font = " " + 1365 / 30 + "px Impact, Sans-serif";
         c.fillStyle = "white";
         c.textAlign = "center"
         c.fillText("Leaderboard(Average)", 1365 / 2, lineSpace * 3+10);
@@ -1848,7 +2097,8 @@
         }else{
           var leaderboardColor = "white"
         }
-        c.roundRect(120,  lineSpace*6 , 100, 100,10)
+        c.fillstyle = "black"
+        c.fillStyle(120,  lineSpace*6 , 100, 100)
         c.fillStyle =  gradient([120,  lineSpace*6 , 100+120, 100+10, "black", "#696969"]);
         c.fill()
         c.fillStyle = leaderboardColor;
@@ -1863,10 +2113,8 @@
       c.fillStyle = "#1270CE";
       c.fillRect(0, 0, 1365, 768);
 
-      c.roundRect(20, 20, 400, 100, 10);
-
-      c.fillStyle =  gradient([20, 20, 20+400, 20+10, "black", "#696969"]);
-      c.fill();
+        c.fillStyle = "black"
+        c.fillRect(20, 20, 400, 100);
 
       c.font = "75px IMPACT, Sans-serif";
 
@@ -1875,6 +2123,7 @@
       c.fillText("Back", 220, 110);
       c.fillStyle = "White";
       c.fillText("Keybinds", 1365/2, 110);
+      c.font = "75px IMPACT, Sans-serif";
       c.textAlign = "right";
       c.fillText("Jump:", 450, lineSpace * 10);
       c.fillText("Crouch:", 450, lineSpace * 13);
@@ -1963,7 +2212,6 @@
 
       window.addEventListener('keyup', function(event){
         if(menu.bindingVisual === true){
-        console.log("det är det")
         if(bindings.jump1Changing === true){
           bindings.jump1 = event.code;
         }
@@ -2342,16 +2590,15 @@
       if(mouse.x > 20 && mouse.x < (20+400) && mouse.y > 20 && mouse.y < (20+100)){
         menu.bindingColor = "#A2A2A2";
         if(mouse.click === true){
-          setTimeout(function(){
             menu.bindingVisual = false;
             menumusic.pause();
             menumusic.currentTime = 0;
-          }, 50)
         }
       }else{
         menu.bindingColor = "white"
       }
     }
+
   };
 setTimeout(function(){
   getSession(getCookie("session"));
@@ -2414,6 +2661,9 @@ setTimeout(function(){
     dino.animationState = 1;
   }
   function exitDeath() {
+    loosehat = false;
+    hat.dropped = false;
+    hat.fly = false
     menu.paused = true;
     dino = {
       x: 100,
@@ -2497,8 +2747,13 @@ setTimeout(function(){
 
   animation1();
   animation3();
-  update();
 
+  var updates = setInterval(update, 1000/fps)
+
+  setInterval(function(){
+    clearInterval(updates);
+    updates = setInterval(update, 1000/fps);
+  }, 1000*10)
 
 
 
@@ -2569,38 +2824,62 @@ setTimeout(function(){
           user.highscore = userArray[i].score;
           coin.value = userArray[i].coins;
           hat.buyvalue = userArray[i].hats;
+
+          let tmpHatArray = hat.buyvalue.split(",");
+          if(tmpHatArray[(hat.equipedHat-1)] === "0"){
+            hat.equipedHat = 0;
+            hatImg.src = "";
+            hat.hatboost = 0;
+          }
+          if(tmpHatArray[(menu.equipedLife+4)] === "0"){
+              menu.equipedLife = 0
+              heartImg.src = ""
+              heart2Img.src = ""
+              dino.lives = 0;
+          }
           if(user.rememberMe === true){
-            console.log("sending")
             var session = CryptoJS.MD5(Math.random()*1000000+user.username);
             setTimeout(function(){
               sendSession(user.username, session);
             },1000)
             document.cookie = `session=${session};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
           }
+
           try {
-            if(userArray[i].scoreArray !== 0){
+            if(userArray[i].scoreArray !== 0 && userArray[i].scoreArray !== null && userArray[i].scoreArray !== undefined && userArray[i].scoreArray !== true){
             scores = userArray[i].scoreArray.split(',').map(function(item) {
             return parseInt(item, 10);
             let sum = scores.reduce((previous, current) => current += previous);
             average = sum / scores.length;
-          
-            
+
             });
             }else{
               scores = [0];
             }
           }
-          catch (e) {
+          catch (err) {
+              scores = [0];
+
             continue;
           }
 
-          
+
           scores = scores.filter(function(val) {
             return val !== 0;
+
           });
-          let sum = scores.reduce((previous, current) => current += previous);
-          average = sum / scores.length;
+
+          if(scores.length !== 0){
+            let sum = scores.reduce((previous, current) => current += previous);
+
+            average = sum / scores.length;
+          }else{
+            average = 0;
+          }
+
+
           user.loggedIn = true;
+          document.getElementById("game-layer").style.cursor = "auto";
 
         }else{
           if(user.wrongText !== "Logging in..." && user.wrongText !== "Checking identification... Pls wait"){
@@ -2612,7 +2891,7 @@ setTimeout(function(){
       return userArray;
       };
     };
-  
+
 
   function showLeaderboard() {
     if (leaderboardShow == true) {
@@ -2638,7 +2917,6 @@ setTimeout(function(){
     const url = `https://l2niipto9l.execute-api.eu-north-1.amazonaws.com/test/sendsession?username=${username}&session=${session.toString()}`;
     http.open("GET", url);
     http.send();
-    console.log("sent")
   }
   function getSession(session){
     
@@ -2661,13 +2939,11 @@ setTimeout(function(){
 
       for(let i = 0; i < sessions.length; i++){
         if(sessions[i].session === session){
-          console.log("inloggad")
           user.wrongText = "Logging in..."
           user.wrongColor = "white"
           getScore();
           setTimeout(function(){
             for(let l = 0; l < userArray.length; l++){
-              console.log("hej")
               if(sessions[i].name === userArray[l].name){
                 user.username = userArray[l].name;
                 user.password = userArray[l].password;
@@ -2675,12 +2951,25 @@ setTimeout(function(){
                 user.highscore = userArray[l].score;
                 coin.value = userArray[l].coins;
                 hat.buyvalue = userArray[l].hats;
+                let tmpHatArray = hat.buyvalue.split(",");
+                if(tmpHatArray[(hat.equipedHat-1)] === "0"){
+                  hat.equipedHat = 0;
+                  hatImg.src = "";
+                  hat.hatboost = 0;
+                }
+                if(tmpHatArray[(menu.equipedLife+4)] === "0" ){
+                    menu.equipedLife = 0
+                    heartImg.src = ""
+                    heart2Img.src = ""
+                    dino.lives = 0;
+                }
                 scores = userArray[l].scoreArray.split(',').map(function(item) {
                 return parseInt(item, 10);
                 let sum = scores.reduce((previous, current) => current += previous);
                 average = sum / scores.length;
                 });                
                 user.loggedIn = true;
+                document.getElementById("game-layer").style.cursor = "auto";
                 menumusic2.pause();
                 menumusic2.currentTime = 0;
               }
@@ -2694,26 +2983,30 @@ setTimeout(function(){
 
   function teleport() {
     if (dino.stand === false && dino.died === false && user.loggedIn === true && dino.timer === ""){
-      var chosen = Math.floor(Math.random() * 6);
+      if(hat.dropped === false || loosehat === true){
+        var chosen = Math.floor(Math.random() * 6);
 
-      if (cactus1.x < -200 && chosen === 1) {
-        cactus1.x = 2000;
-      }
-      else if (cactus2.x < -200 && chosen === 2) {
-        cactus2.x = 2000;
-      }
-      else if (cactus3.x < -200 && chosen === 3) {
-        cactus3.x = 2000;
-      }
-      else if (cactus4.x < -200 && chosen === 4) {
-        cactus4.x = 2000;
-      }
-      else if (bird1.x < -200 && chosen === 5 || bird1.x < -200 && chosen === 6) {
-        bird1.x = 2000;
-        bird1.y = (standardHeight + 100) - Math.random() * 300;
-      }
-      else {
-        chosen = Math.floor(Math.random() * 6);
+        if (cactus1.x < -200 && chosen === 1) {
+          cactus1.x = 2000;
+        }
+        else if (cactus2.x < -200 && chosen === 2) {
+          cactus2.x = 2000;
+        }
+        else if (cactus3.x < -200 && chosen === 3) {
+          cactus3.x = 2000;
+        }
+        else if (cactus4.x < -200 && chosen === 4) {
+          cactus4.x = 2000;
+        }
+        else if (bird1.x < -200 && chosen === 5 || bird1.x < -200 && chosen === 6) {
+          bird1.x = 2000;
+          bird1.y = (standardHeight + 100) - Math.random() * 300;
+        }
+        else {
+          chosen = Math.floor(Math.random() * 6);
+        }
+      }else if(tmpX<0){
+        tmpX = 2000;
       }
     }
   }
@@ -2738,7 +3031,7 @@ function getVersion(){
     }
 }
 function mute() {
-  if(muted === false){
+  if(muted === false|| muted === "false"){
     muted = true;
     deathMusic.volume = 0;
     jumpSound.volume = 0;
@@ -2748,10 +3041,12 @@ function mute() {
     menumusic.volume = 0;
     menumusic2.volume = 0;
     beep1.volume = 0;
-    beep2.volume = 0;
+    beep2.volume = 0;(1365/20)
+    document.cookie = "mute=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = `mute=${muted};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
     return;
   }
-  if(muted === true){
+  if(muted === true|| muted === "true"){
     muted = false;
     deathMusic.volume = 0.5;
     jumpSound.volume = 1;
@@ -2762,6 +3057,8 @@ function mute() {
     menumusic2.volume = 1;
     beep1.volume = 1;
     beep2.volume = 1;
+    document.cookie = "mute=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = `mute=${muted};Expires=Sun, 22 Oct 2030 08:00:00 UTC;`;
     return;
   }
 }
@@ -2794,6 +3091,9 @@ c.textAlign = "right";
 c.font = "bold 30px IMPACT,Sans-serif";
 c.fillText("x:"+mouse.x, mouse.x, mouse.y);
 c.fillText("y:"+mouse.y, mouse.x, mouse.y+20);
+
+
+
 
 })();
 
